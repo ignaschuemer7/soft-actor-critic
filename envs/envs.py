@@ -14,19 +14,11 @@ class ConstantRewardEnv(gym.Env):
 
     def __init__(self, reward=1.0, max_steps=10):
         super().__init__()
-<<<<<<< Updated upstream
-        self.action_space = spaces.Discrete(1)  # una única acción posible: 0
-        self.observation_space = spaces.Discrete(1)  # observación constante: 0
-
-    def _get_obs(self):
-        return 0
-=======
         self.constant_reward = float(reward)
         self.max_steps = int(max_steps)
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)
         self.current_step = 0
->>>>>>> Stashed changes
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -43,17 +35,7 @@ class ConstantRewardEnv(gym.Env):
         truncated = False
         info = {}
         return observation, reward, terminated, truncated, info
-<<<<<<< Updated upstream
-
-    def reset(self, seed=None, options=None):
-        super().reset(seed=seed)
-        observation = self._get_obs()
-        info = self._get_info()
-        return observation, info
-
-=======
     
->>>>>>> Stashed changes
 
 """
 "reward_description": "Agent receives highest reward when its continuous action is near a target value and lower reward as it moves away, following a simple quadratic shape. 
@@ -61,17 +43,10 @@ Episodes are one or a few steps long so the problem reduces to a continuous band
 "goal_description": "Checks that SAC's actor and critic can learn an accurate continuous Q-function and a policy centered on the optimal action. 
 It also tests temperature tuning and reward scaling on a well-conditioned, analytically simple task.",
 """
-<<<<<<< Updated upstream
-
-
-class RandomObsBinaryRewardEnv(gym.Env):
-    def __init__(self):
-=======
 class QuadraticActionRewardEnv(gym.Env):
     """One-step continuous bandit with a quadratic reward around a target action."""
 
     def __init__(self, target=0.5, action_low=-1.0, action_high=1.0, max_steps=1):
->>>>>>> Stashed changes
         super().__init__()
         self.target = float(target)
         self.max_steps = int(max_steps)
@@ -93,15 +68,8 @@ class QuadraticActionRewardEnv(gym.Env):
         observation = np.zeros(1, dtype=np.float32)
         terminated = self.current_step >= self.max_steps
         truncated = False
-<<<<<<< Updated upstream
-        info = {}
-
-        next_obs = self.state
-        return next_obs, reward, terminated, truncated, info
-=======
         info = {"action": a}
         return observation, reward, terminated, truncated, info
->>>>>>> Stashed changes
 
 
 """
@@ -110,27 +78,16 @@ The episode ends after a fixed number of steps with no terminal bonus.",
 "goal_description": "Ensures SAC can marginalize over irrelevant observation noise and still learn the globally optimal action distribution. 
 It also probes robustness of entropy and value estimates when state features carry no information about returns.",
 """
-<<<<<<< Updated upstream
-
-
-class TwoStepDelayedRewardEnv(gym.Env):
-=======
 class RandomObsBinaryRewardEnv(gym.Env):
     """Random observations; reward depends only on action magnitude."""
->>>>>>> Stashed changes
 
     def __init__(self, obs_dim=4, threshold=0.2, max_steps=20):
         super().__init__()
-<<<<<<< Updated upstream
-        self.action_space = spaces.Discrete(1)  # una única acción posible: 0
-        self.observation_space = spaces.Discrete(2)  # observaciones: 0 o 1
-=======
         self.obs_dim = int(obs_dim)
         self.threshold = float(threshold)
         self.max_steps = int(max_steps)
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.obs_dim,), dtype=np.float32)
->>>>>>> Stashed changes
         self.current_step = 0
 
     def reset(self, seed=None, options=None):
@@ -179,11 +136,6 @@ class OneDPointMassReachEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         self.current_step = 0
-<<<<<<< Updated upstream
-        observation = self._get_obs()
-        info = self._get_info()
-        return observation, info
-=======
         self.pos = self.start_pos
         observation = np.array([self.pos], dtype=np.float32)
         info = {}
@@ -205,4 +157,3 @@ class OneDPointMassReachEnv(gym.Env):
         info = {"action": a}
         
         return observation, reward, terminated, truncated, info
->>>>>>> Stashed changes
