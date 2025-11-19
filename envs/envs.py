@@ -9,12 +9,14 @@ Acción única, sin observación, un solo paso, recompensa constante
 - Duración: 1 paso de tiempo (episodio de una sola transición)
 - Recompensa: +1 en cada episodio
 """
+
+
 class ConstantRewardEnv(gym.Env):
 
     def __init__(self):
         super().__init__()
-        self.action_space = spaces.Discrete(1) # una única acción posible: 0
-        self.observation_space = spaces.Discrete(1) # observación constante: 0
+        self.action_space = spaces.Discrete(1)  # una única acción posible: 0
+        self.observation_space = spaces.Discrete(1)  # observación constante: 0
 
     def _get_obs(self):
         return 0
@@ -35,7 +37,7 @@ class ConstantRewardEnv(gym.Env):
         observation = self._get_obs()
         info = self._get_info()
         return observation, info
-    
+
 
 """
 Acción única, observación aleatoria, un solo paso, recompensa dependiente de
@@ -45,6 +47,8 @@ la observación
 - Duración: 1 paso de tiempo
 - Recompensa: coincide con la observación (+1 o -1)
 """
+
+
 class RandomObsBinaryRewardEnv(gym.Env):
     def __init__(self):
         super().__init__()
@@ -64,10 +68,9 @@ class RandomObsBinaryRewardEnv(gym.Env):
         truncated = False
         info = {}
 
-        next_obs = self.state 
+        next_obs = self.state
         return next_obs, reward, terminated, truncated, info
 
-    
 
 """
 Acción única, observación determinista, dos pasos, recompensa diferida
@@ -76,12 +79,14 @@ Acción única, observación determinista, dos pasos, recompensa diferida
 - Duración: 2 pasos por episodio
 - Recompensa: 0 en el primer paso, +1 al final del episodio
 """
+
+
 class TwoStepDelayedRewardEnv(gym.Env):
 
     def __init__(self):
         super().__init__()
-        self.action_space = spaces.Discrete(1) # una única acción posible: 0
-        self.observation_space = spaces.Discrete(2) # observaciones: 0 o 1
+        self.action_space = spaces.Discrete(1)  # una única acción posible: 0
+        self.observation_space = spaces.Discrete(2)  # observaciones: 0 o 1
         self.current_step = 0
 
     def _get_obs(self):
