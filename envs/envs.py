@@ -3,34 +3,47 @@ import numpy as np
 from gymnasium import spaces
 
 """
-Acción única, sin observación, un solo paso, recompensa constante
-- Acciones disponibles: 1 (única acción)
-- Observaciones: constante 0
-- Duración: 1 paso de tiempo (episodio de una sola transición)
-- Recompensa: +1 en cada episodio
+"reward_description": "Agent always receives the same constant reward at every step regardless of the action taken. 
+The episode terminates after a fixed number of steps.",
+"goal_description": "Validates SAC's stability, value estimation, and entropy maximization behavior when Q-values are nearly identical for all actions. 
+A correct implementation should learn a high-entropy policy without diverging or collapsing the critic."
 """
 
 
 class ConstantRewardEnv(gym.Env):
 
-    def __init__(self):
+    def __init__(self, reward=1.0, max_steps=10):
         super().__init__()
+<<<<<<< Updated upstream
         self.action_space = spaces.Discrete(1)  # una única acción posible: 0
         self.observation_space = spaces.Discrete(1)  # observación constante: 0
 
     def _get_obs(self):
         return 0
+=======
+        self.constant_reward = float(reward)
+        self.max_steps = int(max_steps)
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)
+        self.current_step = 0
+>>>>>>> Stashed changes
 
-    def _get_info(self):
-        return {}
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        self.current_step = 0
+        observation = np.zeros(1, dtype=np.float32)
+        info = {}
+        return observation, info
 
     def step(self, action):
-        reward = 1  # recompensa constante
-        observation = self._get_obs()
-        terminated = True  # el episodio termina después de un solo paso
+        self.current_step += 1
+        observation = np.zeros(1, dtype=np.float32)
+        reward = self.constant_reward
+        terminated = self.current_step >= self.max_steps
         truncated = False
-        info = self._get_info()
+        info = {}
         return observation, reward, terminated, truncated, info
+<<<<<<< Updated upstream
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -38,79 +51,158 @@ class ConstantRewardEnv(gym.Env):
         info = self._get_info()
         return observation, info
 
+=======
+    
+>>>>>>> Stashed changes
 
 """
-Acción única, observación aleatoria, un solo paso, recompensa dependiente de
-la observación
-- Acciones disponibles: 1 (única acción)
-- Observaciones: aleatorias, con valor +1 o -1
-- Duración: 1 paso de tiempo
-- Recompensa: coincide con la observación (+1 o -1)
+"reward_description": "Agent receives highest reward when its continuous action is near a target value and lower reward as it moves away, following a simple quadratic shape. 
+Episodes are one or a few steps long so the problem reduces to a continuous bandit.",
+"goal_description": "Checks that SAC's actor and critic can learn an accurate continuous Q-function and a policy centered on the optimal action. 
+It also tests temperature tuning and reward scaling on a well-conditioned, analytically simple task.",
 """
+<<<<<<< Updated upstream
 
 
 class RandomObsBinaryRewardEnv(gym.Env):
     def __init__(self):
+=======
+class QuadraticActionRewardEnv(gym.Env):
+    """One-step continuous bandit with a quadratic reward around a target action."""
+
+    def __init__(self, target=0.5, action_low=-1.0, action_high=1.0, max_steps=1):
+>>>>>>> Stashed changes
         super().__init__()
-        self.action_space = spaces.Discrete(1)
-        self.observation_space = spaces.Discrete(2)
-        self.state = None
+        self.target = float(target)
+        self.max_steps = int(max_steps)
+        self.action_space = spaces.Box(low=action_low, high=action_high, shape=(1,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)
+        self.current_step = 0
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
-        self.state = self.np_random.integers(0, 2)  # 0 o 1
-        return self.state, {}
+        self.current_step = 0
+        observation = np.zeros(1, dtype=np.float32)
+        info = {}
+        return observation, info
 
     def step(self, action):
-        # recompensa basada en el estado actual
-        reward = 1 if self.state == 1 else -1
-        terminated = True
+        self.current_step += 1
+        a = np.clip(action[0], self.action_space.low[0], self.action_space.high[0])
+        reward = -((a - self.target) ** 2)
+        observation = np.zeros(1, dtype=np.float32)
+        terminated = self.current_step >= self.max_steps
         truncated = False
+<<<<<<< Updated upstream
         info = {}
 
         next_obs = self.state
         return next_obs, reward, terminated, truncated, info
+=======
+        info = {"action": a}
+        return observation, reward, terminated, truncated, info
+>>>>>>> Stashed changes
 
 
 """
-Acción única, observación determinista, dos pasos, recompensa diferida
-- Acciones disponibles: 1 (única acción)
-- Observaciones: en el primer paso se observa 0; en el segundo paso se observa 1
-- Duración: 2 pasos por episodio
-- Recompensa: 0 en el primer paso, +1 al final del episodio
+"reward_description": "At each step the observation is pure noise, while reward is +1 for actions within a small band around zero and -1 otherwise. 
+The episode ends after a fixed number of steps with no terminal bonus.",
+"goal_description": "Ensures SAC can marginalize over irrelevant observation noise and still learn the globally optimal action distribution. 
+It also probes robustness of entropy and value estimates when state features carry no information about returns.",
 """
+<<<<<<< Updated upstream
 
 
 class TwoStepDelayedRewardEnv(gym.Env):
+=======
+class RandomObsBinaryRewardEnv(gym.Env):
+    """Random observations; reward depends only on action magnitude."""
+>>>>>>> Stashed changes
 
-    def __init__(self):
+    def __init__(self, obs_dim=4, threshold=0.2, max_steps=20):
         super().__init__()
+<<<<<<< Updated upstream
         self.action_space = spaces.Discrete(1)  # una única acción posible: 0
         self.observation_space = spaces.Discrete(2)  # observaciones: 0 o 1
+=======
+        self.obs_dim = int(obs_dim)
+        self.threshold = float(threshold)
+        self.max_steps = int(max_steps)
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.obs_dim,), dtype=np.float32)
+>>>>>>> Stashed changes
         self.current_step = 0
-
-    def _get_obs(self):
-        return self.current_step  # observación depende del paso actual
-
-    def _get_info(self):
-        return {}
-
-    def step(self, action):
-        if self.current_step == 0:
-            reward = 0  # recompensa en el primer paso
-            self.current_step += 1
-            terminated = False
-        else:
-            reward = 1  # recompensa al final del episodio
-            terminated = True
-        observation = self._get_obs()
-        truncated = False
-        info = self._get_info()
-        return observation, reward, terminated, truncated, info
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         self.current_step = 0
+        observation = self.np_random.standard_normal(self.obs_dim).astype(np.float32)
+        info = {}
+        return observation, info
+
+    def step(self, action):
+        self.current_step += 1
+        a = float(action[0])
+        reward = 1.0 if abs(a) <= self.threshold else -1.0
+        observation = self.np_random.standard_normal(self.obs_dim).astype(np.float32)
+        terminated = self.current_step >= self.max_steps
+        truncated = False
+        info = {"action": a}
+        return observation, reward, terminated, truncated, info
+    
+
+
+"""
+"reward_description": "The agent controls a 1D point mass with continuous actions that move it toward a goal position, receiving a small negative step penalty and a positive bonus when reaching the goal. 
+Episodes end on reaching the goal or after a maximum number of steps.",
+"goal_description": "Tests SAC's ability to handle multi-step credit assignment and continuous control with discounted returns. 
+It also checks that target networks, bootstrapping, and entropy terms work together to learn a smooth, goal-directed policy.",
+"""
+class OneDPointMassReachEnv(gym.Env):
+    """1D point mass moves with continuous actions to reach a goal position."""
+
+    def __init__(self, start_pos=0.0, goal_pos=1.0, max_steps=50, dt=1.0,
+                 action_low=-0.1, action_high=0.1, step_penalty=-0.01, goal_reward=1.0, goal_tolerance=0.05):
+        super().__init__()
+        self.start_pos = float(start_pos)
+        self.goal_pos = float(goal_pos)
+        self.max_steps = int(max_steps)
+        self.dt = float(dt)
+        self.step_penalty = float(step_penalty)
+        self.goal_reward = float(goal_reward)
+        self.goal_tolerance = float(goal_tolerance)
+        self.action_space = spaces.Box(low=action_low, high=action_high, shape=(1,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)
+        self.current_step = 0
+        self.pos = 0.0
+
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        self.current_step = 0
+<<<<<<< Updated upstream
         observation = self._get_obs()
         info = self._get_info()
         return observation, info
+=======
+        self.pos = self.start_pos
+        observation = np.array([self.pos], dtype=np.float32)
+        info = {}
+        return observation, info
+
+    def step(self, action):
+        self.current_step += 1
+        a = float(np.clip(action[0], self.action_space.low[0], self.action_space.high[0]))
+        self.pos += a * self.dt
+        
+        reward = self.step_penalty
+        reached_goal = abs(self.pos - self.goal_pos) <= self.goal_tolerance
+        if reached_goal:
+            reward += self.goal_reward
+        
+        terminated = reached_goal
+        truncated = self.current_step >= self.max_steps
+        observation = np.array([self.pos], dtype=np.float32)
+        info = {"action": a}
+        
+        return observation, reward, terminated, truncated, info
+>>>>>>> Stashed changes
