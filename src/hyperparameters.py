@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Tuple, Optional
+from alpha_scheduler import *
 
 
 @dataclass
@@ -12,7 +13,7 @@ class QNetworkConfig:
 class SACAlgorithmConfig:
     gamma: float = 0.99
     tau: float = 0.005
-    alpha: float = 0.2
+    alpha: AlphaScheduler = FixedAlpha(0.2)
     target_entropy: Optional[float] = None
     auto_entropy_tuning: bool = True
 
@@ -47,8 +48,13 @@ class SACConfig:
 
     def to_dict(self):
         """Get dictionary representation of the config"""
+        sac_dict = self.sac.__dict__.copy()
+
+        if isinstance(self.sac.alpha, AlphaScheduler):
+            sac_dict["alpha"] = self.sac.alpha.to_dict()
+
         return {
-            "sac": self.sac.__dict__,
+            "sac": sac_dict,
             "net": self.net.__dict__,
             "buffer": self.buffer.__dict__,
             "train": self.train.__dict__,

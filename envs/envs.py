@@ -17,7 +17,9 @@ class ConstantRewardEnv(gym.Env):
         self.constant_reward = float(reward)
         self.max_steps = int(max_steps)
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32
+        )
         self.current_step = 0
 
     def reset(self, seed=None, options=None):
@@ -35,7 +37,7 @@ class ConstantRewardEnv(gym.Env):
         truncated = False
         info = {}
         return observation, reward, terminated, truncated, info
-    
+
 
 """
 "reward_description": "Agent receives highest reward when its continuous action is near a target value and lower reward as it moves away, following a simple quadratic shape. 
@@ -43,6 +45,8 @@ Episodes are one or a few steps long so the problem reduces to a continuous band
 "goal_description": "Checks that SAC's actor and critic can learn an accurate continuous Q-function and a policy centered on the optimal action. 
 It also tests temperature tuning and reward scaling on a well-conditioned, analytically simple task.",
 """
+
+
 class QuadraticActionRewardEnv(gym.Env):
     """One-step continuous bandit with a quadratic reward around a target action."""
 
@@ -50,8 +54,12 @@ class QuadraticActionRewardEnv(gym.Env):
         super().__init__()
         self.target = float(target)
         self.max_steps = int(max_steps)
-        self.action_space = spaces.Box(low=action_low, high=action_high, shape=(1,), dtype=np.float32)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)
+        self.action_space = spaces.Box(
+            low=action_low, high=action_high, shape=(1,), dtype=np.float32
+        )
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32
+        )
         self.current_step = 0
 
     def reset(self, seed=None, options=None):
@@ -78,6 +86,8 @@ The episode ends after a fixed number of steps with no terminal bonus.",
 "goal_description": "Ensures SAC can marginalize over irrelevant observation noise and still learn the globally optimal action distribution. 
 It also probes robustness of entropy and value estimates when state features carry no information about returns.",
 """
+
+
 class RandomObsBinaryRewardEnv(gym.Env):
     """Random observations; reward depends only on action magnitude."""
 
@@ -87,7 +97,9 @@ class RandomObsBinaryRewardEnv(gym.Env):
         self.threshold = float(threshold)
         self.max_steps = int(max_steps)
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.obs_dim,), dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(self.obs_dim,), dtype=np.float32
+        )
         self.current_step = 0
 
     def reset(self, seed=None, options=None):
@@ -106,7 +118,6 @@ class RandomObsBinaryRewardEnv(gym.Env):
         truncated = False
         info = {"action": a}
         return observation, reward, terminated, truncated, info
-    
 
 
 """
@@ -115,11 +126,23 @@ Episodes end on reaching the goal or after a maximum number of steps.",
 "goal_description": "Tests SAC's ability to handle multi-step credit assignment and continuous control with discounted returns. 
 It also checks that target networks, bootstrapping, and entropy terms work together to learn a smooth, goal-directed policy.",
 """
+
+
 class OneDPointMassReachEnv(gym.Env):
     """1D point mass moves with continuous actions to reach a goal position."""
 
-    def __init__(self, start_pos=0.0, goal_pos=1.0, max_steps=50, dt=1.0,
-                 action_low=-0.1, action_high=0.1, step_penalty=-0.01, goal_reward=1.0, goal_tolerance=0.05):
+    def __init__(
+        self,
+        start_pos=0.0,
+        goal_pos=1.0,
+        max_steps=50,
+        dt=1.0,
+        action_low=-0.1,
+        action_high=0.1,
+        step_penalty=-0.01,
+        goal_reward=1.0,
+        goal_tolerance=0.05,
+    ):
         super().__init__()
         self.start_pos = float(start_pos)
         self.goal_pos = float(goal_pos)
@@ -128,8 +151,12 @@ class OneDPointMassReachEnv(gym.Env):
         self.step_penalty = float(step_penalty)
         self.goal_reward = float(goal_reward)
         self.goal_tolerance = float(goal_tolerance)
-        self.action_space = spaces.Box(low=action_low, high=action_high, shape=(1,), dtype=np.float32)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32)
+        self.action_space = spaces.Box(
+            low=action_low, high=action_high, shape=(1,), dtype=np.float32
+        )
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32
+        )
         self.current_step = 0
         self.pos = 0.0
 
@@ -143,17 +170,19 @@ class OneDPointMassReachEnv(gym.Env):
 
     def step(self, action):
         self.current_step += 1
-        a = float(np.clip(action[0], self.action_space.low[0], self.action_space.high[0]))
+        a = float(
+            np.clip(action[0], self.action_space.low[0], self.action_space.high[0])
+        )
         self.pos += a * self.dt
-        
+
         reward = self.step_penalty
         reached_goal = abs(self.pos - self.goal_pos) <= self.goal_tolerance
         if reached_goal:
             reward += self.goal_reward
-        
+
         terminated = reached_goal
         truncated = self.current_step >= self.max_steps
         observation = np.array([self.pos], dtype=np.float32)
         info = {"action": a}
-        
+
         return observation, reward, terminated, truncated, info
