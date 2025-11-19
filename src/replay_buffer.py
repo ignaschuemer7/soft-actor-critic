@@ -9,15 +9,12 @@ Transition = namedtuple(
 
 
 class ReplayBuffer:
-    def __init__(self, capacity: int, seed: Optional[int] = None):
+    def __init__(self, capacity: int):
         """
         Experience Replay Buffer for storing and sampling transitions.
         Parameters:
             capacity (int): Maximum number of transitions to store.
-            seed (int, optional): Random seed for reproducibility.
         """
-        if seed is not None:
-            random.seed(seed)
         self.capacity = capacity
         self.memory = deque(maxlen=capacity)
 
