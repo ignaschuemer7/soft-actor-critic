@@ -45,6 +45,15 @@ class SACConfig:
     buffer: ReplayBufferConfig = field(default_factory=ReplayBufferConfig)
     train: TrainingConfig = field(default_factory=TrainingConfig)
 
+    def to_dict(self):
+        """Get dictionary representation of the config"""
+        return {
+            "sac": self.sac.__dict__,
+            "net": self.net.__dict__,
+            "buffer": self.buffer.__dict__,
+            "train": self.train.__dict__,
+        }
+
 
 # Example usage:
 
@@ -53,3 +62,7 @@ class SACConfig:
 # config.buffer.batch_size = 128
 
 # agent = SACAgent(env, config=config)
+
+if __name__ == "__main__":
+    config = SACConfig()
+    print(config.to_dict())
