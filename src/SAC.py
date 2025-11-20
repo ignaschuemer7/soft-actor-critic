@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from hyperparameters import SACConfig
-from replay_buffer import ReplayBuffer
+from replay_buffer import ReplayBuffer, Transition
 from NNs import QNetwork, PolicyNetwork
 import torch.optim as optim
 import gymnasium as gym
@@ -60,15 +60,19 @@ class SAC:
         self.config = config
         self.device = torch.device(self.config.train.device)
         self._set_seed(self.config.train.seed)
+
         # Initialize Replay Buffer
         self.replay_buffer = ReplayBuffer(self.config.buffer.capacity)
+
         # Initialize Networks
         self.obs_size = env.observation_space.shape[0]
         self.action_size = env.action_space.shape[0]
         self._init_policy_network()
         self._init_q_networks()
+
         # Initialize Optimizers
         self._init_optimizers()
+
         # Entropy
         self.alpha = self.config.sac.alpha
 
@@ -118,22 +122,6 @@ class SAC:
         self.env.action_space.seed(seed)
         self.env.observation_space.seed(seed)
 
-    def initialize_networks(self) -> None:
-        """TODO: create policy network, twin Q networks, and corresponding target networks."""
-        pass
-
-    def initialize_replay_buffer(self) -> None:
-        """TODO: set up replay buffer storage."""
-        pass
-
-    def warmup_replay_buffer(self, env: Any, steps: int) -> None:
-        """TODO: prefill the replay buffer using random actions for a fixed number of steps."""
-        pass
-
-    def select_action(self, state: Any, deterministic: bool = False) -> Any:
-        """TODO: sample or choose an action from the policy given the current state."""
-        pass
-
     def store_transition(
         self,
         state: Any,
@@ -142,17 +130,49 @@ class SAC:
         next_state: Any,
         done: bool,
     ) -> None:
-        """TODO: push a transition tuple (s, a, r, s', d) into the replay buffer."""
-        pass
+        """Push a transition tuple (s, a, r, s', d) into the replay buffer."""
+        self.replay_buffer.push(state, action, reward, next_state, done)
+    
+    def warmup_replay_buffer(self, env: Any, steps: int) -> None:
+        """Prefill the replay buffer using random actions for a fixed number of steps."""
+        state, _ = env.reset()
+        for _ in range(steps):
+            action = env.action_space.sample()
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            self.store_transition(state, action, reward, next_state, done)
+            state = next_state
+            if done:
+                state, _ = env.reset()
+
+    def select_action(self, state: Any, deterministic: bool = False) -> Any:
+        """Sample or choose an action from the policy given the current state."""
+        state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+        if deterministic:
+            action = self.policy_net.deterministic_action(state_tensor)
+        else:
+            action, _ = self.policy_net.sample_action(state_tensor)
+        return action.detach().cpu().numpy()[0]
+
 
     # This could be simple conditional inside another func instead of a function
     def can_update(self) -> bool:
         """TODO: return True when the replay buffer contains enough samples to learn."""
         pass
 
-    def sample_batch(self) -> Dict[str, Any]:
-        """TODO: draw a mini-batch of transitions from the replay buffer."""
-        pass
+    def sample_batch(self) -> Transition:
+        """Draw a mini-batch of transitions from the replay buffer."""
+        transitions = self.replay_buffer.sample(self.config.train.batch_size)
+        batch = Transition(*zip(*transitions))
+        
+        return Transition(
+            state=torch.FloatTensor(batch.state).to(self.device),
+            action=torch.FloatTensor(batch.action).to(self.device),
+            reward=torch.FloatTensor(batch.reward).unsqueeze(1).to(self.device),
+            next_state=torch.FloatTensor(batch.next_state).to(self.device),
+            done=torch.FloatTensor(batch.done).unsqueeze(1).to(self.device),
+        )
+        
 
     def compute_target_q_values(
         self,
@@ -160,8 +180,24 @@ class SAC:
         dones: Any,
         next_states: Any,
     ) -> Any:
-        """TODO: compute target Q-values using target critics, next actions, and entropy term."""
-        pass
+        """Compute target Q-values using target critics, next actions, and entropy term."""
+        with torch.no_grad():
+            # Sample next actions from current policy
+            next_actions, next_log_pi = self.policy_net.sample_action(next_states)
+            
+            # Compute target Q-values from both target networks
+            target_q1 = self.q_net1_target(next_states, next_actions)
+            target_q2 = self.q_net2_target(next_states, next_actions)
+            
+            # Take minimum to reduce overestimation bias
+            min_target_q = torch.min(target_q1, target_q2)
+            
+            # Compute target: r + γ * (1 - d) * (min_Q_target - α * log_π)
+            target_q_values = rewards + self.config.sac.gamma * (1 - dones) * (
+                min_target_q - self.alpha * next_log_pi
+            )
+
+        return target_q_values
 
     def update_q_networks(
         self,
