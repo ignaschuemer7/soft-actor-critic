@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 from alpha_scheduler import *
 import torch.nn as nn
 
@@ -16,12 +16,29 @@ _ACTIVATIONS = {
 
 @dataclass
 class QNetworkConfig:
-    hidden_sizes: Tuple[int, ...] = (256, 256)
+    hidden_sizes: List[int] = field(default_factory=lambda: [256, 256])
     init_std: float = 0.1
     hidden_layers_act: str = "relu"
     output_activation: str = "identity"
     output_activation_fn: nn.Module = field(init=False)
     hidden_layers_act_fn: nn.Module = field(init=False)
+
+    def __post_init__(self):
+        self.output_activation_fn = _ACTIVATIONS[self.output_activation]()
+        self.hidden_layers_act_fn = _ACTIVATIONS[self.hidden_layers_act]()
+
+
+@dataclass
+class PolicyNetworkConfig:
+    hidden_sizes: List[int] = field(default_factory=lambda: [256, 256])
+    init_std: float = 0.1
+    log_std_min: float = -20
+    log_std_max: float = 2
+    hidden_layers_act: str = "relu"
+    output_activation: str = "identity"
+    output_activation_fn: nn.Module = field(init=False)
+    hidden_layers_act_fn: nn.Module = field(init=False)
+    action_scale: float = 1.0
 
     def __post_init__(self):
         self.output_activation_fn = _ACTIVATIONS[self.output_activation]()
@@ -71,7 +88,8 @@ class LoggerConfig:
 @dataclass
 class SACConfig:
     sac: SACAlgorithmConfig = field(default_factory=SACAlgorithmConfig)
-    net: QNetworkConfig = field(default_factory=QNetworkConfig)
+    q_net: QNetworkConfig = field(default_factory=QNetworkConfig)
+    policy_net: PolicyNetworkConfig = field(default_factory=PolicyNetworkConfig)
     buffer: ReplayBufferConfig = field(default_factory=ReplayBufferConfig)
     train: TrainingConfig = field(default_factory=TrainingConfig)
     logger: LoggerConfig = field(default_factory=LoggerConfig)
@@ -85,7 +103,8 @@ class SACConfig:
 
         return {
             "sac": sac_dict,
-            "net": self.net.__dict__,
+            "q_net": self.q_net.__dict__,
+            "policy_net": self.policy_net.__dict__,
             "buffer": self.buffer.__dict__,
             "train": self.train.__dict__,
         }

@@ -8,21 +8,24 @@ import numpy as np
 
 
 class QNetwork(nn.Module):
-    def __init__(self, state_size, action_size, hidden_sizes, seed=None):
+    def __init__(self, obs_size, action_size, hidden_sizes, seed=None):
         super(QNetwork, self).__init__()
         if seed is not None:
             torch.manual_seed(seed)
-        self.net = build_mlp(state_size, hidden_sizes, action_size)
+        self.net = build_mlp(obs_size, hidden_sizes, action_size)
 
     def forward(self, state):
         out = self.net(state)
         return torch.squeeze(out, -1)  # Ensure output is of shape (batch_size,)
 
+    def save_weights(self, filepath):
+        torch.save(self.state_dict(), filepath)
+
 
 class PolicyNetwork(nn.Module):
     def __init__(
         self,
-        state_size,
+        obs_size,
         action_size,
         hidden_sizes,
         log_std_min=-20,
@@ -35,7 +38,7 @@ class PolicyNetwork(nn.Module):
             torch.manual_seed(seed)
         self.log_std_min = log_std_min
         self.log_std_max = log_std_max
-        self.net = build_mlp(state_size, hidden_sizes, action_size * 2)
+        self.net = build_mlp(obs_size, hidden_sizes, action_size * 2)
         self.action_scale = action_scale
 
     def forward(self, state):
@@ -59,9 +62,12 @@ class PolicyNetwork(nn.Module):
         action = torch.tanh(mu) * self.action_scale
         return action
 
+    def save_weights(self, filepath):
+        torch.save(self.state_dict(), filepath)
+
 
 def build_mlp(
-    state_size: int,
+    obs_size: int,
     hidden_sizes: List[int],
     action_size: int,
     hidden_activations: nn.Module = nn.Tanh,
@@ -71,7 +77,7 @@ def build_mlp(
     Build a simple MLP network.
 
     Args:
-        state_size: Dimension of state space
+        obs_size: Dimension of the observation space
         hidden_sizes: List of hidden layer sizes
         action_size: Number of actions
         activation: Activation function for hidden layers
@@ -83,7 +89,7 @@ def build_mlp(
     if not hidden_sizes:
         raise ValueError("hidden_sizes cannot be empty")
 
-    layer_sizes = [state_size] + hidden_sizes + [action_size]
+    layer_sizes = [obs_size] + hidden_sizes + [action_size]
 
     layers = []
     for i in range(len(layer_sizes) - 1):
@@ -94,12 +100,12 @@ def build_mlp(
 
 if __name__ == "__main__":
     # Example usage
-    state_size = 3
+    obs_size = 3
     action_size = 1
     hidden_sizes = [256, 256]
-    q_net = QNetwork(state_size, action_size, hidden_sizes, seed=0)
-    policy_net = PolicyNetwork(state_size, action_size, hidden_sizes, seed=0)
-    sample_state = torch.randn(4, state_size)
+    q_net = QNetwork(obs_size, action_size, hidden_sizes, seed=0)
+    policy_net = PolicyNetwork(obs_size, action_size, hidden_sizes, seed=0)
+    sample_state = torch.randn(4, obs_size)
     q_values = q_net(sample_state)
     actions, log_probs = policy_net.sample_action(sample_state)
     print("Q-values:", q_values)
