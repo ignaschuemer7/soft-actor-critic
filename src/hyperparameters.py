@@ -1,12 +1,31 @@
 from dataclasses import dataclass, field
 from typing import Tuple, Optional
 from alpha_scheduler import *
+import torch.nn as nn
+
+_ACTIVATIONS = {
+    "relu": nn.ReLU,
+    "tanh": nn.Tanh,
+    "elu": nn.ELU,
+    "leaky_relu": nn.LeakyReLU,
+    "gelu": nn.GELU,
+    "selu": nn.SELU,
+    "identity": nn.Identity,
+}
 
 
 @dataclass
 class QNetworkConfig:
     hidden_sizes: Tuple[int, ...] = (256, 256)
     init_std: float = 0.1
+    hidden_layers_act: str = "relu"
+    output_activation: str = "identity"
+    output_activation_fn: nn.Module = field(init=False)
+    hidden_layers_act_fn: nn.Module = field(init=False)
+
+    def __post_init__(self):
+        self.output_activation_fn = _ACTIVATIONS[self.output_activation]()
+        self.hidden_layers_act_fn = _ACTIVATIONS[self.hidden_layers_act]()
 
 
 @dataclass
