@@ -1,6 +1,8 @@
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
+from typing import Optional
+
 
 """
 "reward_description": "Agent always receives the same constant reward at every step regardless of the action taken. 
@@ -12,7 +14,7 @@ A correct implementation should learn a high-entropy policy without diverging or
 
 class ConstantRewardEnv(gym.Env):
 
-    def __init__(self, reward=1.0, max_steps=10):
+    def __init__(self, reward: float = 1.0, max_steps: int = 10):
         super().__init__()
         self.constant_reward = float(reward)
         self.max_steps = int(max_steps)
@@ -22,7 +24,7 @@ class ConstantRewardEnv(gym.Env):
         )
         self.current_step = 0
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         self.current_step = 0
         observation = np.zeros(1, dtype=np.float32)
@@ -50,7 +52,13 @@ It also tests temperature tuning and reward scaling on a well-conditioned, analy
 class QuadraticActionRewardEnv(gym.Env):
     """One-step continuous bandit with a quadratic reward around a target action."""
 
-    def __init__(self, target=0.5, action_low=-1.0, action_high=1.0, max_steps=1):
+    def __init__(
+        self,
+        target: float = 0.5,
+        action_low: float = -1.0,
+        action_high: float = 1.0,
+        max_steps: int = 1,
+    ):
         super().__init__()
         self.target = float(target)
         self.max_steps = int(max_steps)
@@ -62,7 +70,7 @@ class QuadraticActionRewardEnv(gym.Env):
         )
         self.current_step = 0
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         self.current_step = 0
         observation = np.zeros(1, dtype=np.float32)
@@ -91,7 +99,7 @@ It also probes robustness of entropy and value estimates when state features car
 class RandomObsBinaryRewardEnv(gym.Env):
     """Random observations; reward depends only on action magnitude."""
 
-    def __init__(self, obs_dim=4, threshold=0.2, max_steps=20):
+    def __init__(self, obs_dim: int = 4, threshold: float = 0.2, max_steps: int = 20):
         super().__init__()
         self.obs_dim = int(obs_dim)
         self.threshold = float(threshold)
@@ -102,7 +110,7 @@ class RandomObsBinaryRewardEnv(gym.Env):
         )
         self.current_step = 0
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         self.current_step = 0
         observation = self.np_random.standard_normal(self.obs_dim).astype(np.float32)
@@ -133,15 +141,15 @@ class OneDPointMassReachEnv(gym.Env):
 
     def __init__(
         self,
-        start_pos=0.0,
-        goal_pos=1.0,
-        max_steps=50,
-        dt=1.0,
-        action_low=-0.1,
-        action_high=0.1,
-        step_penalty=-0.01,
-        goal_reward=1.0,
-        goal_tolerance=0.05,
+        start_pos: float = 0.0,
+        goal_pos: float = 1.0,
+        max_steps: int = 50,
+        dt: float = 1.0,
+        action_low: float = -0.1,
+        action_high: float = 0.1,
+        step_penalty: float = -0.01,
+        goal_reward: float = 1.0,
+        goal_tolerance: float = 0.05,
     ):
         super().__init__()
         self.start_pos = float(start_pos)
@@ -160,7 +168,7 @@ class OneDPointMassReachEnv(gym.Env):
         self.current_step = 0
         self.pos = 0.0
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         self.current_step = 0
         self.pos = self.start_pos
