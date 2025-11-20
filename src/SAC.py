@@ -210,7 +210,7 @@ class SAC:
 if __name__ == "__main__":
     # Example usage
     config = SACConfig()
-    env = gym.make("Pendulum-v1")
+    env = gym.make("InvertedPendulum-v5")
     sac_agent = SAC(env, config)
     print("SAC agent initialized.")
     sac_agent.show_config()
