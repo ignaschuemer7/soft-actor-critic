@@ -40,10 +40,14 @@ class SACAlgorithmConfig:
     critic_lr: float = 3e-4
     alpha_lr: float = 3e-4
 
+    warming_steps: int = (
+        1_000  # Number of steps to warm up the replay buffer with random actions
+    )
+
 
 @dataclass
 class ReplayBufferConfig:
-    capacity: int = 1_000_000
+    capacity: int = 10_000
 
 
 @dataclass
