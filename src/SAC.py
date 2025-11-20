@@ -8,6 +8,7 @@ class SAC:
 #   (Optional) Entropy temperature α (can be learned automatically)
 
 # Initialize replay buffer D
+# Warming up the replay buffer D with random actions for a certain number of steps
 
 # Loop for each training iteration:
 #   Sample a state s from the environment
@@ -16,7 +17,7 @@ class SAC:
 #   Store transition (s, a, r, s', d) in replay buffer D
 
 #   If enough transitions in D:
-#     Sample a mini-batch of transitions (s, a, r, s', d) from D
+#     Sample a mini-batch of transitions (s, a, r, s', d) from D with size |B|
 
 #     Update Q-networks:
 #       Compute target Q-values:
@@ -25,14 +26,14 @@ class SAC:
 #         q_target = r + γ * (1 - d) * (min(Qφ1_target(s', a_next), Qφ2_target(s', a_next)) - α * log_pi_next)
       
 #       Update Q-network parameters φ1, φ2 by minimizing:
-#         L_Q = MSE(Qφ1(s,a), q_target) + MSE(Qφ2(s,a), q_target)
+#         L_Q = 1/|B| * (MSE(Qφ1(s,a), q_target) + MSE(Qφ2(s,a), q_target))
 
 #     Update Policy network:
 #       Sample a_reparam ~ πθ(a|s) (using reparameterization trick)
 #       log_pi_reparam = log(πθ(a_reparam|s))
       
 #       Update policy parameters θ by minimizing:
-#         L_π = α * log_pi_reparam - min(Qφ1(s, a_reparam), Qφ2(s, a_reparam))
+#         L_π = 1/|B| * (min(Qφ1(s, a_reparam), Qφ2(s, a_reparam)) - α * log_pi_reparam)
 
 #     (Optional) Update Entropy Temperature α:
 #       If α is learned automatically:
