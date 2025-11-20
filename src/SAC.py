@@ -68,19 +68,12 @@ class SAC:
         self._init_policy_network()
         self._init_q_networks()
         # Initialize Optimizers
-        self.policy_optimizer = optim.Adam(
-            self.policy_net.parameters(), lr=self.config.sac.actor_lr
-        )
-        self.q1_optimizer = optim.Adam(
-            self.q_net1.parameters(), lr=self.config.sac.critic_lr
-        )
-        self.q2_optimizer = optim.Adam(
-            self.q_net2.parameters(), lr=self.config.sac.critic_lr
-        )
+        self._init_optimizers()
+        # Entropy
         self.alpha = self.config.sac.alpha
 
-    def _init_q_networks(self):
-        # Initialize Q-Networks and Target Networks
+    def _init_q_networks(self) -> None:
+        """Initialize Q-Networks and their Target Networks."""
         self.q_net1 = QNetwork(
             obs_size=self.obs_size,
             action_size=self.action_size,
@@ -94,8 +87,8 @@ class SAC:
         self.q_net1_target = deepcopy(self.q_net1).to(self.device)
         self.q_net2_target = deepcopy(self.q_net2).to(self.device)
 
-    def _init_policy_network(self):
-        # Initialize Policy Network
+    def _init_policy_network(self) -> None:
+        """Initialize Policy Network."""
         self.policy_net = PolicyNetwork(
             obs_size=self.obs_size,
             action_size=self.action_size,
@@ -105,7 +98,19 @@ class SAC:
             action_scale=self.config.policy_net.action_scale,
         ).to(self.device)
 
-    def _set_seed(self, seed: int):
+    def _init_optimizers(self) -> None:
+        """Initialize Optimizers for Networks."""
+        self.policy_optimizer = optim.Adam(
+            self.policy_net.parameters(), lr=self.config.sac.actor_lr
+        )
+        self.q1_optimizer = optim.Adam(
+            self.q_net1.parameters(), lr=self.config.sac.critic_lr
+        )
+        self.q2_optimizer = optim.Adam(
+            self.q_net2.parameters(), lr=self.config.sac.critic_lr
+        )
+
+    def _set_seed(self, seed: int) -> None:
         """Set random seed for reproducibility."""
         np.random.seed(seed)
         torch.manual_seed(seed)
