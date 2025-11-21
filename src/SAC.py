@@ -76,6 +76,7 @@ class SAC:
         # Entropy
         self.alpha = self.config.sac.alpha
 
+
     def _init_q_networks(self) -> None:
         """Initialize Q-Networks and their Target Networks."""
         self.q_net1 = QNetwork(
@@ -91,6 +92,7 @@ class SAC:
         self.q_net1_target = deepcopy(self.q_net1).to(self.device)
         self.q_net2_target = deepcopy(self.q_net2).to(self.device)
 
+
     def _init_policy_network(self) -> None:
         """Initialize Policy Network."""
         self.policy_net = PolicyNetwork(
@@ -101,6 +103,7 @@ class SAC:
             log_std_max=self.config.policy_net.log_std_max,
             action_scale=self.config.policy_net.action_scale,
         ).to(self.device)
+
 
     def _init_optimizers(self) -> None:
         """Initialize Optimizers for Networks."""
@@ -114,6 +117,7 @@ class SAC:
             self.q_net2.parameters(), lr=self.config.sac.critic_lr
         )
 
+
     def _set_seed(self, seed: int) -> None:
         """Set random seed for reproducibility."""
         np.random.seed(seed)
@@ -121,6 +125,7 @@ class SAC:
         self.env.reset(seed=seed)
         self.env.action_space.seed(seed)
         self.env.observation_space.seed(seed)
+
 
     def store_transition(
         self,
@@ -133,6 +138,7 @@ class SAC:
         """Push a transition tuple (s, a, r, s', d) into the replay buffer."""
         self.replay_buffer.push(state, action, reward, next_state, done)
     
+
     def warmup_replay_buffer(self, env: Any, steps: int) -> None:
         """Prefill the replay buffer using random actions for a fixed number of steps."""
         state, _ = env.reset()
@@ -144,6 +150,7 @@ class SAC:
             state = next_state
             if done:
                 state, _ = env.reset()
+
 
     def select_action(self, state: Any, deterministic: bool = False) -> Any:
         """Sample or choose an action from the policy given the current state."""
@@ -157,8 +164,9 @@ class SAC:
 
     # This could be simple conditional inside another func instead of a function
     def can_update(self) -> bool:
-        """TODO: return True when the replay buffer contains enough samples to learn."""
-        pass
+        """Return True when the replay buffer contains enough samples to learn."""
+        return len(self.replay_buffer) >= self.config.train.update_after
+
 
     def sample_batch(self) -> Transition:
         """Draw a mini-batch of transitions from the replay buffer."""
@@ -199,18 +207,54 @@ class SAC:
 
         return target_q_values
 
+
     def update_q_networks(
         self,
         states: Any,
         actions: Any,
         target_q_values: Any,
-    ) -> Dict[str, float]:
-        """TODO: update Q-network parameters by minimizing critic loss against targets."""
-        pass
+    ):
+        """Update Q-network parameters by minimizing critic loss against targets."""
+        # Compute current Q-values
+        current_q1 = self.q_net1(states, actions)
+        current_q2 = self.q_net2(states, actions)
 
-    def update_policy_network(self, states: Any) -> Dict[str, float]:
-        """TODO: update policy parameters via reparameterized action samples."""
-        pass
+        # Compute critic losses
+        q1_loss = torch.nn.functional.mse_loss(current_q1, target_q_values)
+        q2_loss = torch.nn.functional.mse_loss(current_q2, target_q_values)
+
+        # Optimize Q-network 1
+        self.q1_optimizer.zero_grad()
+        q1_loss.backward()
+        self.q1_optimizer.step()
+
+        # Optimize Q-network 2
+        self.q2_optimizer.zero_grad()
+        q2_loss.backward()
+        self.q2_optimizer.step()
+
+
+
+    def update_policy_network(self, states: Any):
+        """Update policy parameters via reparameterized action samples."""
+        # Sample actions from the current policy
+        actions, log_pi = self.policy_net.sample_action(states)
+
+        # Compute Q-values for the sampled actions
+        q1_values = self.q_net1(states, actions)
+        q2_values = self.q_net2(states, actions)
+
+        # Take minimum Q-value to reduce overestimation bias
+        min_q_values = torch.min(q1_values, q2_values)
+
+        # Compute policy loss
+        policy_loss = (min_q_values - self.alpha * log_pi).mean()
+
+        # Optimize policy network
+        self.policy_optimizer.zero_grad()
+        policy_loss.backward()
+        self.policy_optimizer.step()
+
 
     # This one in the pseudo-code is optional
     def update_entropy_temperature(
@@ -221,22 +265,84 @@ class SAC:
         """TODO: optionally tune alpha toward target entropy."""
         pass
 
+
     def soft_update_target_networks(self) -> None:
-        """TODO: polyak-average target networks toward online critic parameters."""
-        pass
+        """Polyak-average target networks toward online critic parameters."""
+        # Update Q-network 1 target
+        for target_param, param in zip(
+            self.q_net1_target.parameters(), self.q_net1.parameters()
+        ):
+            target_param.data.copy_(
+                self.config.sac.tau * param.data + (1.0 - self.config.sac.tau) * target_param.data
+            )
 
-    def training_step(self, env_step: int) -> Dict[str, float]:
-        """TODO: run one gradient update of critics, policy, temperature, and targets."""
-        pass
+        # Update Q-network 2 target
+        for target_param, param in zip(
+            self.q_net2_target.parameters(), self.q_net2.parameters()
+        ):
+            target_param.data.copy_(
+                self.config.sac.tau * param.data + (1.0 - self.config.sac.tau) * target_param.data
+            )
 
-    def run_training_loop(self, env: Any, total_steps: int) -> None:
-        """TODO: main environment-interaction loop that collects data and triggers updates."""
-        pass
+
+    def training_step(self, env_step: int):
+        """Run one gradient update of critics, policy, temperature, and targets."""
+        batch = self.sample_batch()
+
+        # Compute target Q-values
+        target_q_values = self.compute_target_q_values(
+            rewards=batch.reward,
+            dones=batch.done,
+            next_states=batch.next_state,
+        )
+
+        # Update Q-networks
+        self.update_q_networks(
+            states=batch.state,
+            actions=batch.action,
+            target_q_values=target_q_values,
+        )
+
+        # Update Policy network
+        self.update_policy_network(states=batch.state)
+
+        # (Optional: TODO) Update Entropy Temperature
+        # self.update_entropy_temperature(...)
+
+        # Soft update target networks
+        self.soft_update_target_networks()
+
+
+    def run_training_loop(self, env: Any, total_steps: int):
+        """Main environment-interaction loop that collects data and triggers updates."""
+        state, _ = env.reset()
+        for env_step in range(total_steps):
+            # Select action according to current policy
+            action = self.select_action(state)
+
+            # Step the environment
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+
+            # Store transition in replay buffer
+            self.store_transition(state, action, reward, next_state, done)
+
+            state = next_state
+
+            if done:
+                state, _ = env.reset()
+
+            # Perform training step if enough data is available
+            if self.can_update():
+                for _ in range(self.config.train.gradient_steps_per_update):
+                    self.training_step(env_step)
+
 
     def show_config(self, indent: int = 4) -> None:
         """Print the current configuration in a readable format."""
         pp = pprint.PrettyPrinter(indent=indent)
         pp.pprint(self.config.to_dict())
+
 
     def print_net_arqhitectures(self) -> None:
         """Print the architectures of the networks."""
