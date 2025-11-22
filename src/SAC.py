@@ -448,6 +448,6 @@ if __name__ == "__main__":
     config = SACConfig()
     env = gym.make("InvertedPendulum-v5")
     sac_agent = SAC(env, config)
-    print("SAC agent initialized.")
+    print("* SAC agent initialized *")
     sac_agent.show_config()
     sac_agent.print_net_arqhitectures()
