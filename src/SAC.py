@@ -1,16 +1,23 @@
 import torch
 import numpy as np
-from hyperparameters import SACConfig
-from replay_buffer import ReplayBuffer, Transition
-from NNs import QNetwork, PolicyNetwork
+
+try:
+    from .hyperparameters import SACConfig
+    from .replay_buffer import ReplayBuffer, Transition
+    from .NNs import QNetwork, PolicyNetwork
+    from .experiment_logger import ExperimentLogger
+except ImportError:
+    from hyperparameters import SACConfig
+    from replay_buffer import ReplayBuffer, Transition
+    from NNs import QNetwork, PolicyNetwork
+    from experiment_logger import ExperimentLogger
 import torch.optim as optim
 import gymnasium as gym
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from copy import deepcopy
 import pprint
 from collections import deque
 from tqdm import tqdm
-from torch.utils.tensorboard import SummaryWriter
 
 # Initialize networks:
 #   Policy network πθ(a|s) with parameters θ
@@ -88,6 +95,18 @@ class SAC:
             self.alpha = self.log_alpha.exp()
         else:
             self.alpha = torch.tensor(self.config.sac.alpha.get_alpha()).to(self.device)
+
+        self.env_name = self.config.logger.env_name or self._infer_env_name(env)
+        self.agent_name = self.config.logger.agent_name or self.__class__.__name__
+        self.logger = (
+            ExperimentLogger(
+                self.config.logger,
+                env_name=self.env_name,
+                agent_name=self.agent_name,
+            )
+            if self.config.logger.enabled
+            else None
+        )
 
     def _init_q_networks(self) -> None:
         """Initialize Q-Networks and their Target Networks."""
@@ -331,12 +350,13 @@ class SAC:
     def run_training_loop(
         self,
         num_episodes: int,
-        writer: SummaryWriter = None,
+        logger: Optional[ExperimentLogger] = None,
         tqdm_disable: bool = False,
         print_rewards: bool = False,
     ) -> Dict[str, float]:
         """Main environment-interaction loop that collects data and triggers updates."""
 
+        active_logger = logger or self.logger
         total_episodes = 0
         total_steps = 0
         returns_window = deque(maxlen=100)
@@ -363,12 +383,11 @@ class SAC:
                 if self.can_update():
                     for _ in range(self.config.train.gradient_steps_per_update):
                         self.training_step()
-                # Log Q-values
-                if writer is not None:
+                if active_logger is not None and self.config.logger.log_q_values:
                     self._log_q_values(
                         states=torch.FloatTensor(state).unsqueeze(0).to(self.device),
                         actions=torch.FloatTensor(action).unsqueeze(0).to(self.device),
-                        writer=writer,
+                        logger=active_logger,
                         step=total_steps,
                     )
 
@@ -376,9 +395,12 @@ class SAC:
             avg_return = np.mean(returns_window)
             best_avg_return = max(best_avg_return, avg_return)
 
-            if writer is not None:
-                writer.add_scalar("Episode/Reward", episode_return, episode)
-                writer.add_scalar("Episode/Length", episode_steps, episode)
+            if active_logger is not None and self.config.logger.log_episode_stats:
+                active_logger.log_episode_metrics(
+                    episode_idx=episode,
+                    reward=episode_return,
+                    length=episode_steps,
+                )
             if print_rewards:
                 print(
                     f"Episode {episode}, Return: {episode_return:.2f}, Average Return(last 100 episodes): {avg_return:.2f}"
@@ -388,17 +410,18 @@ class SAC:
             "best_avg_return": best_avg_return,
             "final_avg_return": avg_return,
         }
+        if active_logger is not None:
+            active_logger.log_hparams(self.config.to_dict(), metrics)
         return metrics
 
     def _log_q_values(
-        self, states: Any, actions: Any, writer: SummaryWriter, step: int
+        self, states: Any, actions: Any, logger: ExperimentLogger, step: int
     ) -> None:
         """Log Q-values from both Q-networks for given states and actions."""
         with torch.no_grad():
             q1_values = self.q_net1(states, actions)
             q2_values = self.q_net2(states, actions)
-            writer.add_scalar("QValues/Q1", q1_values.mean().item(), step)
-            writer.add_scalar("QValues/Q2", q2_values.mean().item(), step)
+            logger.log_q_values(q1_values.mean().item(), q2_values.mean().item(), step)
 
     def show_config(self, indent: int = 4) -> None:
         """Print the current configuration in a readable format."""
@@ -413,6 +436,11 @@ class SAC:
         print(self.q_net1)
         print("\nQ-Network 2 Architecture:")
         print(self.q_net2)
+
+    def _infer_env_name(self, env: gym.Env) -> str:
+        if getattr(env, "spec", None) is not None and getattr(env.spec, "id", None):
+            return env.spec.id
+        return env.__class__.__name__
 
 
 if __name__ == "__main__":

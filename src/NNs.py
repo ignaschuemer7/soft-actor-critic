@@ -12,10 +12,11 @@ class QNetwork(nn.Module):
         super(QNetwork, self).__init__()
         if seed is not None:
             torch.manual_seed(seed)
-        self.net = build_mlp(obs_size, hidden_sizes, action_size)
+        self.net = build_mlp(obs_size + action_size, hidden_sizes, 1)
 
-    def forward(self, state):
-        out = self.net(state)
+    def forward(self, state, action):
+        sa = torch.cat([state, action], dim=-1)
+        out = self.net(sa)
         return torch.squeeze(out, -1)  # Ensure output is of shape (batch_size,)
 
     def save_weights(self, filepath):
@@ -106,7 +107,8 @@ if __name__ == "__main__":
     q_net = QNetwork(obs_size, action_size, hidden_sizes, seed=0)
     policy_net = PolicyNetwork(obs_size, action_size, hidden_sizes, seed=0)
     sample_state = torch.randn(4, obs_size)
-    q_values = q_net(sample_state)
+    sample_action = torch.randn(4, action_size)
+    q_values = q_net(sample_state, sample_action)
     actions, log_probs = policy_net.sample_action(sample_state)
     print("Q-values:", q_values)
     print("Actions:", actions)

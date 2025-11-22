@@ -1,7 +1,13 @@
 from dataclasses import dataclass, field
 from typing import Tuple, Optional, List
-from alpha_scheduler import *
+
+try:
+    from .alpha_scheduler import *
+except ImportError:
+    from alpha_scheduler import *
 import torch.nn as nn
+import sys
+import os
 
 _ACTIVATIONS = {
     "relu": nn.ReLU,
@@ -74,12 +80,29 @@ class TrainingConfig:
 
 
 @dataclass
+class Logger:
+    enabled: bool = True
+    log_dir: str = "runs"
+    env_name: Optional[str] = None
+    agent_name: str = "SAC"
+    run_name: str = "sac"
+    use_timestamp: bool = True
+    timestamp_format: str = "%Y%m%d-%H%M%S"
+    flush_secs: int = 10
+    log_episode_stats: bool = True
+    log_q_values: bool = True
+    save_model: bool = False
+    model_save_path: str = "models/sac_model.pth"
+
+
+@dataclass
 class SACConfig:
     sac: SACAlgorithmConfig = field(default_factory=SACAlgorithmConfig)
     q_net: QNetworkConfig = field(default_factory=QNetworkConfig)
     policy_net: PolicyNetworkConfig = field(default_factory=PolicyNetworkConfig)
     buffer: ReplayBufferConfig = field(default_factory=ReplayBufferConfig)
     train: TrainingConfig = field(default_factory=TrainingConfig)
+    logger: Logger = field(default_factory=Logger)
 
     def to_dict(self):
         """Get dictionary representation of the config"""
@@ -94,6 +117,7 @@ class SACConfig:
             "policy_net": self.policy_net.__dict__,
             "buffer": self.buffer.__dict__,
             "train": self.train.__dict__,
+            "logger": self.logger.__dict__,
         }
 
 
