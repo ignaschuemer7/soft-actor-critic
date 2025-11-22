@@ -8,6 +8,9 @@ import gymnasium as gym
 from typing import Any, Dict
 from copy import deepcopy
 import pprint
+from collections import deque
+from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 # Initialize networks:
 #   Policy network πθ(a|s) with parameters θ
@@ -78,12 +81,13 @@ class SAC:
         if self.config.sac.auto_entropy_tuning:
             # the log of alpha is optimized
             self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
-            self.alpha_optimizer = optim.Adam([self.log_alpha], lr=self.config.sac.alpha_lr)
+            self.alpha_optimizer = optim.Adam(
+                [self.log_alpha], lr=self.config.sac.alpha_lr
+            )
             # Convert log_alpha to alpha --> alpha = e^(log_alpha)
             self.alpha = self.log_alpha.exp()
         else:
             self.alpha = torch.tensor(self.config.sac.alpha.get_alpha()).to(self.device)
-
 
     def _init_q_networks(self) -> None:
         """Initialize Q-Networks and their Target Networks."""
@@ -100,7 +104,6 @@ class SAC:
         self.q_net1_target = deepcopy(self.q_net1).to(self.device)
         self.q_net2_target = deepcopy(self.q_net2).to(self.device)
 
-
     def _init_policy_network(self) -> None:
         """Initialize Policy Network."""
         self.policy_net = PolicyNetwork(
@@ -111,7 +114,6 @@ class SAC:
             log_std_max=self.config.policy_net.log_std_max,
             action_scale=self.config.policy_net.action_scale,
         ).to(self.device)
-
 
     def _init_optimizers(self) -> None:
         """Initialize Optimizers for Networks."""
@@ -125,7 +127,6 @@ class SAC:
             self.q_net2.parameters(), lr=self.config.sac.critic_lr
         )
 
-
     def _set_seed(self, seed: int) -> None:
         """Set random seed for reproducibility."""
         np.random.seed(seed)
@@ -133,7 +134,6 @@ class SAC:
         self.env.reset(seed=seed)
         self.env.action_space.seed(seed)
         self.env.observation_space.seed(seed)
-
 
     def store_transition(
         self,
@@ -145,7 +145,6 @@ class SAC:
     ) -> None:
         """Push a transition tuple (s, a, r, s', d) into the replay buffer."""
         self.replay_buffer.push(state, action, reward, next_state, done)
-    
 
     def warmup_replay_buffer(self, env: Any, steps: int) -> None:
         """Prefill the replay buffer using random actions for a fixed number of steps."""
@@ -159,7 +158,6 @@ class SAC:
             if done:
                 state, _ = env.reset()
 
-
     def select_action(self, state: Any, deterministic: bool = False) -> Any:
         """Sample or choose an action from the policy given the current state."""
         state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
@@ -169,21 +167,19 @@ class SAC:
             action, _ = self.policy_net.sample_action(state_tensor)
         return action.detach().cpu().numpy()[0]
 
-
     # This could be simple conditional inside another func instead of a function
     def can_update(self) -> bool:
         """Return True when the replay buffer contains enough samples to learn."""
         # Warn if update_after is greater than capacity --> it will never train
-        if (self.config.train.update_after > self.config.buffer.capacity):
+        if self.config.train.update_after > self.config.buffer.capacity:
             print("Warning: update_after is greater than replay buffer capacity.")
         return len(self.replay_buffer) >= self.config.train.update_after
-
 
     def sample_batch(self) -> Transition:
         """Draw a mini-batch of transitions from the replay buffer."""
         transitions = self.replay_buffer.sample(self.config.train.batch_size)
         batch = Transition(*zip(*transitions))
-        
+
         return Transition(
             state=torch.FloatTensor(batch.state).to(self.device),
             action=torch.FloatTensor(batch.action).to(self.device),
@@ -191,7 +187,6 @@ class SAC:
             next_state=torch.FloatTensor(batch.next_state).to(self.device),
             done=torch.FloatTensor(batch.done).unsqueeze(1).to(self.device),
         )
-        
 
     def compute_target_q_values(
         self,
@@ -203,21 +198,20 @@ class SAC:
         with torch.no_grad():
             # Sample next actions from current policy
             next_actions, next_log_pi = self.policy_net.sample_action(next_states)
-            
+
             # Compute target Q-values from both target networks
             target_q1 = self.q_net1_target(next_states, next_actions)
             target_q2 = self.q_net2_target(next_states, next_actions)
-            
+
             # Take minimum to reduce overestimation bias
             min_target_q = torch.min(target_q1, target_q2)
-            
+
             # Compute target: r + γ * (1 - d) * (min_Q_target - α * log_π)
             target_q_values = rewards + self.config.sac.gamma * (1 - dones) * (
                 min_target_q - self.alpha * next_log_pi
             )
 
         return target_q_values
-
 
     def update_q_networks(
         self,
@@ -244,8 +238,6 @@ class SAC:
         q2_loss.backward()
         self.q2_optimizer.step()
 
-
-
     def update_policy_network(self, states: Any):
         """Update policy parameters via reparameterized action samples."""
         # Sample actions from the current policy
@@ -269,7 +261,6 @@ class SAC:
         # return log_pi for entropy temperature update
         return log_pi
 
-
     # This one in the pseudo-code is optional
     def update_entropy_temperature(
         self,
@@ -277,7 +268,9 @@ class SAC:
     ) -> Dict[str, float]:
         if self.config.sac.auto_entropy_tuning:
             # Compute alpha loss using the log of alpha (to ensure alpha is positive)
-            alpha_loss = -(self.log_alpha * (log_pi + self.target_entropy).detach()).mean()
+            alpha_loss = -(
+                self.log_alpha * (log_pi + self.target_entropy).detach()
+            ).mean()
             # Optimize alpha
             self.alpha_optimizer.zero_grad()
             alpha_loss.backward()
@@ -288,7 +281,6 @@ class SAC:
         else:
             return {}
 
-
     def soft_update_target_networks(self) -> None:
         """Polyak-average target networks toward online critic parameters."""
         # Update Q-network 1 target
@@ -296,7 +288,8 @@ class SAC:
             self.q_net1_target.parameters(), self.q_net1.parameters()
         ):
             target_param.data.copy_(
-                self.config.sac.tau * param.data + (1.0 - self.config.sac.tau) * target_param.data
+                self.config.sac.tau * param.data
+                + (1.0 - self.config.sac.tau) * target_param.data
             )
 
         # Update Q-network 2 target
@@ -304,11 +297,11 @@ class SAC:
             self.q_net2_target.parameters(), self.q_net2.parameters()
         ):
             target_param.data.copy_(
-                self.config.sac.tau * param.data + (1.0 - self.config.sac.tau) * target_param.data
+                self.config.sac.tau * param.data
+                + (1.0 - self.config.sac.tau) * target_param.data
             )
 
-
-    def training_step(self, env_step: int):
+    def training_step(self):
         """Run one gradient update of critics, policy, temperature, and targets."""
         batch = self.sample_batch()
 
@@ -335,37 +328,82 @@ class SAC:
         # Soft update target networks
         self.soft_update_target_networks()
 
-
-    def run_training_loop(self, env: Any, total_steps: int):
+    def run_training_loop(
+        self,
+        num_episodes: int,
+        writer: SummaryWriter = None,
+        tqdm_disable: bool = False,
+        print_rewards: bool = False,
+    ) -> Dict[str, float]:
         """Main environment-interaction loop that collects data and triggers updates."""
-        state, _ = env.reset()
-        for env_step in range(total_steps):
-            # Select action according to current policy
-            action = self.select_action(state)
 
-            # Step the environment
-            next_state, reward, terminated, truncated, _ = env.step(action)
-            done = terminated or truncated
+        total_episodes = 0
+        total_steps = 0
+        returns_window = deque(maxlen=100)
+        best_avg_return = -float("inf")
+        for episode in tqdm(range(num_episodes), disable=tqdm_disable):
+            state, _ = self.env.reset()
+            done = False
+            episode_return = 0.0
+            total_episodes += 1
+            episode_steps = 0
+            while not done:
+                # Select action according to current policy
+                action = self.select_action(state)
+                # Step the environment
+                next_state, reward, terminated, truncated, _ = self.env.step(action)
+                done = terminated or truncated
+                # Store transition in replay buffer
+                self.store_transition(state, action, reward, next_state, done)
+                state = next_state
+                episode_return += reward
+                episode_steps += 1
+                total_steps += 1
+                # Perform training step if enough data is available
+                if self.can_update():
+                    for _ in range(self.config.train.gradient_steps_per_update):
+                        self.training_step()
+                # Log Q-values
+                if writer is not None:
+                    self._log_q_values(
+                        states=torch.FloatTensor(state).unsqueeze(0).to(self.device),
+                        actions=torch.FloatTensor(action).unsqueeze(0).to(self.device),
+                        writer=writer,
+                        step=total_steps,
+                    )
 
-            # Store transition in replay buffer
-            self.store_transition(state, action, reward, next_state, done)
+            returns_window.append(episode_return)
+            avg_return = np.mean(returns_window)
+            best_avg_return = max(best_avg_return, avg_return)
 
-            state = next_state
+            if writer is not None:
+                writer.add_scalar("Episode/Reward", episode_return, episode)
+                writer.add_scalar("Episode/Length", episode_steps, episode)
+            if print_rewards:
+                print(
+                    f"Episode {episode}, Return: {episode_return:.2f}, Average Return(last 100 episodes): {avg_return:.2f}"
+                )
+        metrics = {
+            "total_episodes": total_episodes,
+            "best_avg_return": best_avg_return,
+            "final_avg_return": avg_return,
+        }
+        return metrics
 
-            if done:
-                state, _ = env.reset()
-
-            # Perform training step if enough data is available
-            if self.can_update():
-                for _ in range(self.config.train.gradient_steps_per_update):
-                    self.training_step(env_step)
-
+    def _log_q_values(
+        self, states: Any, actions: Any, writer: SummaryWriter, step: int
+    ) -> None:
+        """Log Q-values from both Q-networks for given states and actions."""
+        with torch.no_grad():
+            q1_values = self.q_net1(states, actions)
+            q2_values = self.q_net2(states, actions)
+            writer.add_scalar("QValues/Q1", q1_values.mean().item(), step)
+            writer.add_scalar("QValues/Q2", q2_values.mean().item(), step)
 
     def show_config(self, indent: int = 4) -> None:
         """Print the current configuration in a readable format."""
         pp = pprint.PrettyPrinter(indent=indent)
         pp.pprint(self.config.to_dict())
-
 
     def print_net_arqhitectures(self) -> None:
         """Print the architectures of the networks."""

@@ -80,19 +80,12 @@ class TrainingConfig:
 
 
 @dataclass
-class LoggerConfig:
-    agent_name: str = "SAC"
-    log_dir: str = "logs/"
-
-
-@dataclass
 class SACConfig:
     sac: SACAlgorithmConfig = field(default_factory=SACAlgorithmConfig)
     q_net: QNetworkConfig = field(default_factory=QNetworkConfig)
     policy_net: PolicyNetworkConfig = field(default_factory=PolicyNetworkConfig)
     buffer: ReplayBufferConfig = field(default_factory=ReplayBufferConfig)
     train: TrainingConfig = field(default_factory=TrainingConfig)
-    logger: LoggerConfig = field(default_factory=LoggerConfig)
 
     def to_dict(self):
         """Get dictionary representation of the config"""
