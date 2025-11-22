@@ -82,7 +82,7 @@ class SAC:
             # Convert log_alpha to alpha --> alpha = e^(log_alpha)
             self.alpha = self.log_alpha.exp()
         else:
-            self.alpha = torch.tensor(self.config.sac.alpha).to(self.device)
+            self.alpha = torch.tensor(self.config.sac.alpha.get_alpha()).to(self.device)
 
 
     def _init_q_networks(self) -> None:

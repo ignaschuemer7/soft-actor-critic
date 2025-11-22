@@ -1,5 +1,5 @@
 class AlphaScheduler:
-    def get_alpha(self, step: int) -> float:
+    def get_alpha(self) -> float:
         raise NotImplementedError
 
     def to_dict(self):
@@ -12,7 +12,7 @@ class FixedAlpha(AlphaScheduler):
     def __init__(self, alpha: float):
         self.alpha = alpha
 
-    def get_alpha(self, step: int) -> float:
+    def get_alpha(self) -> float:
         return self.alpha
 
     def to_dict(self):
