@@ -170,10 +170,10 @@ class SAC:
     # This could be simple conditional inside another func instead of a function
     def can_update(self) -> bool:
         """Return True when the replay buffer contains enough samples to learn."""
-        # Warn if update_after is greater than capacity --> it will never train
-        if self.config.train.update_after > self.config.buffer.capacity:
-            print("Warning: update_after is greater than replay buffer capacity.")
-        return len(self.replay_buffer) >= self.config.train.update_after
+        # Warn if warming_steps is greater than capacity --> it will never train
+        if self.config.train.warming_steps > self.config.buffer.capacity:
+            print("Warning: warming_steps is greater than replay buffer capacity.")
+        return len(self.replay_buffer) >= self.config.train.warming_steps
 
     def sample_batch(self) -> Transition:
         """Draw a mini-batch of transitions from the replay buffer."""

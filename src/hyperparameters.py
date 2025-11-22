@@ -50,16 +50,11 @@ class SACAlgorithmConfig:
     gamma: float = 0.99
     tau: float = 0.005
     alpha: AlphaScheduler = FixedAlpha(0.2)
-    target_entropy: Optional[float] = None
     auto_entropy_tuning: bool = True
 
     actor_lr: float = 3e-4
     critic_lr: float = 3e-4
     alpha_lr: float = 3e-4
-
-    warming_steps: int = (
-        1_000  # Number of steps to warm up the replay buffer with random actions
-    )
 
 
 @dataclass
@@ -69,14 +64,13 @@ class ReplayBufferConfig:
 
 @dataclass
 class TrainingConfig:
-    total_steps: int = 1_000_000
-    start_steps: int = 10_000
-    update_after: int = 1_000
-    update_every: int = 50
     gradient_steps_per_update: int = 1
-    max_ep_len: int = 1_000
     seed: int = 0
+    batch_size: int = 64
     device: str = "cuda"
+    warming_steps: int = (
+        1_000  # Number of steps to warm up the replay buffer with random actions
+    )
 
 
 @dataclass
