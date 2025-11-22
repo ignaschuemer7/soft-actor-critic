@@ -74,7 +74,15 @@ class SAC:
         self._init_optimizers()
 
         # Entropy
-        self.alpha = self.config.sac.alpha
+        self.target_entropy = -float(self.action_size)
+        if self.config.sac.auto_entropy_tuning:
+            # the log of alpha is optimized
+            self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
+            self.alpha_optimizer = optim.Adam([self.log_alpha], lr=self.config.sac.alpha_lr)
+            # Convert log_alpha to alpha --> alpha = e^(log_alpha)
+            self.alpha = self.log_alpha.exp()
+        else:
+            self.alpha = torch.tensor(self.config.sac.alpha).to(self.device)
 
 
     def _init_q_networks(self) -> None:
@@ -165,6 +173,9 @@ class SAC:
     # This could be simple conditional inside another func instead of a function
     def can_update(self) -> bool:
         """Return True when the replay buffer contains enough samples to learn."""
+        # Warn if update_after is greater than capacity --> it will never train
+        if (self.config.train.update_after > self.config.buffer.capacity):
+            print("Warning: update_after is greater than replay buffer capacity.")
         return len(self.replay_buffer) >= self.config.train.update_after
 
 
@@ -255,15 +266,27 @@ class SAC:
         policy_loss.backward()
         self.policy_optimizer.step()
 
+        # return log_pi for entropy temperature update
+        return log_pi
+
 
     # This one in the pseudo-code is optional
     def update_entropy_temperature(
         self,
         log_pi: Any,
-        step: int = 0,
     ) -> Dict[str, float]:
-        """TODO: optionally tune alpha toward target entropy."""
-        pass
+        if self.config.sac.auto_entropy_tuning:
+            # Compute alpha loss using the log of alpha (to ensure alpha is positive)
+            alpha_loss = -(self.log_alpha * (log_pi + self.target_entropy).detach()).mean()
+            # Optimize alpha
+            self.alpha_optimizer.zero_grad()
+            alpha_loss.backward()
+            self.alpha_optimizer.step()
+            # Update alpha value
+            self.alpha = self.log_alpha.exp()
+            return {"alpha_loss": alpha_loss.item(), "alpha": self.alpha.item()}
+        else:
+            return {}
 
 
     def soft_update_target_networks(self) -> None:
@@ -304,10 +327,10 @@ class SAC:
         )
 
         # Update Policy network
-        self.update_policy_network(states=batch.state)
+        log_pi = self.update_policy_network(states=batch.state)
 
-        # (Optional: TODO) Update Entropy Temperature
-        # self.update_entropy_temperature(...)
+        # Update Entropy Temperature
+        self.update_entropy_temperature(log_pi=log_pi)
 
         # Soft update target networks
         self.soft_update_target_networks()
