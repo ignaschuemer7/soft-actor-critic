@@ -14,7 +14,7 @@ A correct implementation should learn a high-entropy policy without diverging or
 
 class ConstantRewardEnv(gym.Env):
 
-    def __init__(self, reward: float = 1.0, max_steps: int = 10):
+    def __init__(self, reward: float = 1.0, max_steps: int = 1):
         super().__init__()
         self.constant_reward = float(reward)
         self.max_steps = int(max_steps)
