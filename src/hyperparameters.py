@@ -30,8 +30,18 @@ class QNetworkConfig:
     hidden_layers_act_fn: nn.Module = field(init=False)
 
     def __post_init__(self):
-        self.output_activation_fn = _ACTIVATIONS[self.output_activation]()
-        self.hidden_layers_act_fn = _ACTIVATIONS[self.hidden_layers_act]()
+        self._refresh_activations()
+
+    def __setattr__(self, name, value):
+        super().__setattr__(name, value)
+        if name in {"hidden_layers_act", "output_activation"} and hasattr(
+            self, "_refresh_activations"
+        ):
+            self._refresh_activations()
+
+    def _refresh_activations(self):
+        self.output_activation_fn = _ACTIVATIONS[self.output_activation]
+        self.hidden_layers_act_fn = _ACTIVATIONS[self.hidden_layers_act]
 
 
 @dataclass
@@ -47,8 +57,18 @@ class PolicyNetworkConfig:
     action_scale: float = 1.0
 
     def __post_init__(self):
-        self.output_activation_fn = _ACTIVATIONS[self.output_activation]()
-        self.hidden_layers_act_fn = _ACTIVATIONS[self.hidden_layers_act]()
+        self._refresh_activations()
+
+    def __setattr__(self, name, value):
+        super().__setattr__(name, value)
+        if name in {"hidden_layers_act", "output_activation"} and hasattr(
+            self, "_refresh_activations"
+        ):
+            self._refresh_activations()
+
+    def _refresh_activations(self):
+        self.output_activation_fn = _ACTIVATIONS[self.output_activation]
+        self.hidden_layers_act_fn = _ACTIVATIONS[self.hidden_layers_act]
 
 
 @dataclass
@@ -87,7 +107,7 @@ class Logger:
     agent_name: str = "SAC"
     run_name: str = "sac"
     use_timestamp: bool = True
-    timestamp_format: str = "%Y%m%d-%H%M%S"
+    timestamp_format: str = "%Y_%m_%d-%H_%M_%S"
     flush_secs: int = 10
     log_episode_stats: bool = True
     log_q_values: bool = True

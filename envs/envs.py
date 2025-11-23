@@ -99,7 +99,7 @@ It also probes robustness of entropy and value estimates when state features car
 class RandomObsBinaryRewardEnv(gym.Env):
     """Random observations; reward depends only on action magnitude."""
 
-    def __init__(self, obs_dim: int = 4, threshold: float = 0.2, max_steps: int = 20):
+    def __init__(self, obs_dim: int = 4, threshold: float = 0.2, max_steps: int = 1):
         super().__init__()
         self.obs_dim = int(obs_dim)
         self.threshold = float(threshold)
@@ -113,7 +113,11 @@ class RandomObsBinaryRewardEnv(gym.Env):
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         self.current_step = 0
-        observation = self.np_random.standard_normal(self.obs_dim).astype(np.float32)
+        # observation = self.np_random.standard_normal(self.obs_dim).astype(np.float32)
+        # uniform noise instead of normal
+        observation = self.np_random.uniform(
+            low=-1.0, high=1.0, size=self.obs_dim
+        ).astype(np.float32)
         info = {}
         return observation, info
 
@@ -121,7 +125,11 @@ class RandomObsBinaryRewardEnv(gym.Env):
         self.current_step += 1
         a = float(action[0])
         reward = 1.0 if abs(a) <= self.threshold else -1.0
-        observation = self.np_random.standard_normal(self.obs_dim).astype(np.float32)
+        # observation = self.np_random.standard_normal(self.obs_dim).astype(np.float32)
+        # uniform noise instead of normal
+        observation = self.np_random.uniform(
+            low=-1.0, high=1.0, size=self.obs_dim
+        ).astype(np.float32)
         terminated = self.current_step >= self.max_steps
         truncated = False
         info = {"action": a}

@@ -8,11 +8,26 @@ import numpy as np
 
 
 class QNetwork(nn.Module):
-    def __init__(self, obs_size, action_size, hidden_sizes, seed=None):
+    def __init__(
+        self,
+        obs_size,
+        action_size,
+        hidden_sizes,
+        hidden_activations=nn.ReLU,
+        output_activation=nn.Identity,
+        seed=None,
+    ):
         super(QNetwork, self).__init__()
         if seed is not None:
             torch.manual_seed(seed)
-        self.net = build_mlp(obs_size + action_size, hidden_sizes, 1)
+        self.net = build_mlp(
+            obs_size + action_size,
+            hidden_sizes,
+            1,
+            hidden_activations,
+            output_activation,
+        )
+        self._init_weights_xavier()
 
     def forward(self, state, action):
         sa = torch.cat([state, action], dim=-1)
@@ -21,6 +36,12 @@ class QNetwork(nn.Module):
 
     def save_weights(self, filepath):
         torch.save(self.state_dict(), filepath)
+
+    def _init_weights_xavier(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                nn.init.zeros_(m.bias)
 
 
 class PolicyNetwork(nn.Module):
@@ -33,14 +54,23 @@ class PolicyNetwork(nn.Module):
         log_std_max=2,
         seed=None,
         action_scale=1.0,
+        hidden_activations=nn.ReLU,
+        output_activation=nn.Identity,
     ):
         super(PolicyNetwork, self).__init__()
         if seed is not None:
             torch.manual_seed(seed)
         self.log_std_min = log_std_min
         self.log_std_max = log_std_max
-        self.net = build_mlp(obs_size, hidden_sizes, action_size * 2)
+        self.net = build_mlp(
+            obs_size,
+            hidden_sizes,
+            action_size * 2,
+            hidden_activations,
+            output_activation,
+        )
         self.action_scale = action_scale
+        self._init_weights_xavier()
 
     def forward(self, state):
         mu_log_std = self.net(state)
@@ -65,6 +95,12 @@ class PolicyNetwork(nn.Module):
 
     def save_weights(self, filepath):
         torch.save(self.state_dict(), filepath)
+
+    def _init_weights_xavier(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                nn.init.zeros_(m.bias)
 
 
 def build_mlp(

@@ -18,6 +18,7 @@ from copy import deepcopy
 import pprint
 from collections import deque
 from tqdm import tqdm
+import random
 
 # Initialize networks:
 #   Policy network πθ(a|s) with parameters θ
@@ -114,11 +115,17 @@ class SAC:
             obs_size=self.obs_size,
             action_size=self.action_size,
             hidden_sizes=self.config.q_net.hidden_sizes,
+            hidden_activations=self.config.q_net.hidden_layers_act_fn,
+            output_activation=self.config.q_net.output_activation_fn,
+            seed=self.config.train.seed,
         ).to(self.device)
         self.q_net2 = QNetwork(
             obs_size=self.obs_size,
             action_size=self.action_size,
             hidden_sizes=self.config.q_net.hidden_sizes,
+            hidden_activations=self.config.q_net.hidden_layers_act_fn,
+            output_activation=self.config.q_net.output_activation_fn,
+            seed=self.config.train.seed,
         ).to(self.device)
         self.q_net1_target = deepcopy(self.q_net1).to(self.device)
         self.q_net2_target = deepcopy(self.q_net2).to(self.device)
@@ -132,6 +139,9 @@ class SAC:
             log_std_min=self.config.policy_net.log_std_min,
             log_std_max=self.config.policy_net.log_std_max,
             action_scale=self.config.policy_net.action_scale,
+            hidden_activations=self.config.policy_net.hidden_layers_act_fn,
+            output_activation=self.config.policy_net.output_activation_fn,
+            seed=self.config.train.seed,
         ).to(self.device)
 
     def _init_optimizers(self) -> None:
@@ -150,6 +160,7 @@ class SAC:
         """Set random seed for reproducibility."""
         np.random.seed(seed)
         torch.manual_seed(seed)
+        random.seed(seed)
         self.env.reset(seed=seed)
         self.env.action_space.seed(seed)
         self.env.observation_space.seed(seed)
@@ -199,12 +210,28 @@ class SAC:
         transitions = self.replay_buffer.sample(self.config.train.batch_size)
         batch = Transition(*zip(*transitions))
 
+        states = torch.as_tensor(np.stack(batch.state), dtype=torch.float32).to(
+            self.device
+        )
+        actions = torch.as_tensor(np.stack(batch.action), dtype=torch.float32).to(
+            self.device
+        )
+        rewards = torch.as_tensor(np.array(batch.reward), dtype=torch.float32).to(
+            self.device
+        )
+        next_states = torch.as_tensor(
+            np.stack(batch.next_state), dtype=torch.float32
+        ).to(self.device)
+        dones = torch.as_tensor(np.array(batch.done), dtype=torch.float32).to(
+            self.device
+        )
+
         return Transition(
-            state=torch.FloatTensor(batch.state).to(self.device),
-            action=torch.FloatTensor(batch.action).to(self.device),
-            reward=torch.FloatTensor(batch.reward).unsqueeze(1).to(self.device),
-            next_state=torch.FloatTensor(batch.next_state).to(self.device),
-            done=torch.FloatTensor(batch.done).unsqueeze(1).to(self.device),
+            state=states,
+            action=actions,
+            reward=rewards,
+            next_state=next_states,
+            done=dones,
         )
 
     def compute_target_q_values(
@@ -215,21 +242,13 @@ class SAC:
     ) -> Any:
         """Compute target Q-values using target critics, next actions, and entropy term."""
         with torch.no_grad():
-            # Sample next actions from current policy
             next_actions, next_log_pi = self.policy_net.sample_action(next_states)
-
-            # Compute target Q-values from both target networks
             target_q1 = self.q_net1_target(next_states, next_actions)
             target_q2 = self.q_net2_target(next_states, next_actions)
-
-            # Take minimum to reduce overestimation bias
             min_target_q = torch.min(target_q1, target_q2)
-
-            # Compute target: r + γ * (1 - d) * (min_Q_target - α * log_π)
             target_q_values = rewards + self.config.sac.gamma * (1 - dones) * (
                 min_target_q - self.alpha * next_log_pi
             )
-
         return target_q_values
 
     def update_q_networks(
