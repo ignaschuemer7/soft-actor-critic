@@ -45,7 +45,7 @@ import random
 #       log_pi_reparam = log(πθ(a_reparam|s))
 
 #       Update policy parameters θ by minimizing:
-#         L_π = 1/|B| * (min(Qφ1(s, a_reparam), Qφ2(s, a_reparam)) - α * log_pi_reparam)
+#         L_π = 1/|B| * (α * log_pi_reparam - min(Qφ1(s, a_reparam), Qφ2(s, a_reparam)))
 
 #     (Optional) Update Entropy Temperature α:
 #       If α is learned automatically:
