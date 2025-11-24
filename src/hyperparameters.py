@@ -76,7 +76,7 @@ class SACAlgorithmConfig:
     gamma: float = 0.99
     tau: float = 0.005
     alpha: AlphaScheduler = FixedAlpha(0.2)
-    auto_entropy_tuning: bool = True
+    auto_entropy_tuning: bool = False
 
     actor_lr: float = 3e-4
     critic_lr: float = 3e-4

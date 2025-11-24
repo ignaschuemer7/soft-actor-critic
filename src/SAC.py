@@ -242,12 +242,13 @@ class SAC:
     ) -> Any:
         """Compute target Q-values using target critics, next actions, and entropy term."""
         with torch.no_grad():
+            alpha = self.alpha.detach()
             next_actions, next_log_pi = self.policy_net.sample_action(next_states)
             target_q1 = self.q_net1_target(next_states, next_actions)
             target_q2 = self.q_net2_target(next_states, next_actions)
             min_target_q = torch.min(target_q1, target_q2)
             target_q_values = rewards + self.config.sac.gamma * (1 - dones) * (
-                min_target_q - self.alpha * next_log_pi
+                min_target_q - alpha * next_log_pi
             )
         return target_q_values
 
@@ -289,7 +290,8 @@ class SAC:
         min_q_values = torch.min(q1_values, q2_values)
 
         # Compute policy loss
-        policy_loss = (min_q_values - self.alpha * log_pi).mean()
+        alpha = self.alpha.detach()
+        policy_loss = (alpha * log_pi - min_q_values).mean()
 
         # Optimize policy network
         self.policy_optimizer.zero_grad()
