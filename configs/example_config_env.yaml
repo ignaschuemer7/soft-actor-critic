@@ -1,0 +1,52 @@
+# Example configuration file for SAC agent in ConstantRewardEnv
+
+# SAC Algorithm parameters
+sac:
+  gamma: 0.99
+  tau: 0.005
+  alpha: 0.1
+  auto_entropy_tuning: false
+  actor_lr: 0.0003
+  critic_lr: 0.0003
+  alpha_lr: 0.0003
+
+# Q-Network parameters
+q_net:
+  hidden_sizes: [256, 256]
+  hidden_layers_act: 'relu'
+  output_activation: 'identity'
+
+# Policy Network parameters
+policy_net:
+  hidden_sizes: [256, 256]
+  hidden_layers_act: 'relu'
+  output_activation: 'identity'
+  log_std_min: -20
+  log_std_max: 2
+  action_scale: 1.0
+
+# Replay Buffer parameters
+buffer:
+  capacity: 1000000
+
+# Training parameters
+train:
+  gradient_steps_per_update: 1
+  seed: 0
+  batch_size: 256
+  warming_steps: 1000
+  device: 'cuda'
+  num_episodes: 2000
+
+# Logger parameters
+logger:
+  enabled: true
+  log_dir: 'runs'
+  env_name: 'ConstantRewardEnv'
+  agent_name: 'SAC'
+  run_name: 'sac'
+  use_timestamp: true
+  timestamp_format: '%Y_%m_%d-%H_%M_%S'
+  flush_secs: 10
+  log_episode_stats: true
+  log_q_values: true

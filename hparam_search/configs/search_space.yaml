@@ -1,0 +1,32 @@
+search_space:
+  sac:
+    actor_lr:
+      type: loguniform
+      low: 1.0e-5
+      high: 1.0e-3
+    critic_lr:
+      type: loguniform
+      low: 1.0e-5
+      high: 1.0e-3
+    gamma:
+      type: uniform
+      low: 0.95
+      high: 0.999
+    tau:
+      type: uniform
+      low: 0.001
+      high: 0.02
+  q_net:
+    hidden_sizes:
+      type: categorical
+      choices:
+        - "[64, 64]"
+        - "[128, 128]"
+        - "[256, 256]"
+  policy_net:
+    hidden_sizes:
+      type: categorical
+      choices:
+        - "[64, 64]"
+        - "[128, 128]"
+        - "[256, 256]"

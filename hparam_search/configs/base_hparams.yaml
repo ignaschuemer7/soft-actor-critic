@@ -1,4 +1,4 @@
-# Configuration for the Reacher environment
+# Base hyperparameters for SAC agent
 
 # SAC Algorithm parameters
 sac:
@@ -36,6 +36,7 @@ train:
   batch_size: 256
   warming_steps: 1000
   device: 'cuda'
+  num_episodes: 2000
 
 # Logger parameters
 logger:

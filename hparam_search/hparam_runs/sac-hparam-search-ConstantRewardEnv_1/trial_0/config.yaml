@@ -1,0 +1,40 @@
+buffer:
+  capacity: 1000000
+logger:
+  agent_name: SAC
+  enabled: true
+  env_name: ConstantRewardEnv
+  experiment_name: sac-hparam-search-trial-0
+  flush_secs: 10
+  log_dir: hparam_search/hparams_runs/sac-hparam-search-ConstantRewardEnv_1/trial_0
+  log_episode_stats: true
+  log_q_values: true
+  run_name: sac
+  timestamp_format: '%Y_%m_%d-%H_%M_%S'
+  use_timestamp: true
+policy_net:
+  action_scale: 1.0
+  hidden_layers_act: relu
+  hidden_sizes: '[128, 128]'
+  log_std_max: 2
+  log_std_min: -20
+  output_activation: identity
+q_net:
+  hidden_layers_act: relu
+  hidden_sizes: '[256, 256]'
+  output_activation: identity
+sac:
+  actor_lr: 1.0802213334631418e-05
+  alpha: 0.1
+  alpha_lr: 0.0003
+  auto_entropy_tuning: false
+  critic_lr: 2.530330623494968e-05
+  gamma: 0.9986400697760203
+  tau: 0.005046121964970026
+train:
+  batch_size: 256
+  device: cuda
+  gradient_steps_per_update: 1
+  num_episodes: 2000
+  seed: 0
+  warming_steps: 1000

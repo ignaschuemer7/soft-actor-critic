@@ -2,9 +2,11 @@ import argparse
 import yaml
 import gymnasium as gym
 import torch
+import json
 
 from sac.agent import SAC
 from sac.envs import *
+from tqdm import tqdm
 
 
 def main(args):
@@ -14,6 +16,11 @@ def main(args):
     # Load hyperparameters from config file
     with open(args.config, "r") as f:
         config = yaml.safe_load(f)
+
+    # Post-process config to handle string-encoded lists
+    for net in ["q_net", "policy_net"]:
+        if net in config and isinstance(config[net].get("hidden_sizes"), str):
+            config[net]["hidden_sizes"] = json.loads(config[net]["hidden_sizes"])
 
     print("Configuration loaded:")
     print(config)
@@ -36,10 +43,9 @@ def main(args):
     agent = SAC(env, config)
 
     print("Agent initialized. Starting training...")
-    agent.run_training_loop(
-        num_episodes=2000
-    )  # Run for a small number of episodes for testing
+    metrics = agent.run_training_loop(num_episodes=config["train"]["num_episodes"])
 
+    print(f"Final average return: {metrics['final_avg_return']}")
     print("Training finished.")
 
 
@@ -48,7 +54,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default="configs/reacher_env.yaml",
+        default="configs/example_config_env.yaml",
         help="Path to the configuration file.",
     )
     args = parser.parse_args()

@@ -1,0 +1,5 @@
+Configuration loaded:
+{'buffer': {'capacity': 1000000}, 'logger': {'agent_name': 'SAC', 'enabled': True, 'env_name': 'ConstantRewardEnv', 'experiment_name': 'sac-hparam-search-trial-1', 'flush_secs': 10, 'log_dir': 'hparam_search/hparam_runs/sac-hparam-search-ConstantRewardEnv_2/trial_1', 'log_episode_stats': True, 'log_q_values': True, 'run_name': 'sac', 'timestamp_format': '%Y_%m_%d-%H_%M_%S', 'use_timestamp': True}, 'policy_net': {'action_scale': 1.0, 'hidden_layers_act': 'relu', 'hidden_sizes': [128, 128], 'log_std_max': 2, 'log_std_min': -20, 'output_activation': 'identity'}, 'q_net': {'hidden_layers_act': 'relu', 'hidden_sizes': [128, 128], 'output_activation': 'identity'}, 'sac': {'actor_lr': 0.0008354910720824808, 'alpha': 0.1, 'alpha_lr': 0.0003, 'auto_entropy_tuning': False, 'critic_lr': 0.0004893064352908559, 'gamma': 0.9765131969815547, 'tau': 0.006617453085882854}, 'train': {'batch_size': 256, 'device': 'cuda', 'gradient_steps_per_update': 1, 'num_episodes': 2000, 'seed': 0, 'warming_steps': 1000}}
+Agent initialized. Starting training...
+Final average return: 1.0
+Training finished.
