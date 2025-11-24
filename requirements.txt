@@ -1,0 +1,12 @@
+# Core dependencies
+torch
+numpy
+gymnasium
+
+# Logging and configuration
+tensorboard
+pyyaml
+
+# For development and notebooks
+jupyter
+ipykernel

@@ -6,50 +6,44 @@ from typing import Any, Dict, Optional
 
 from torch.utils.tensorboard import SummaryWriter
 
-try:
-    from .hyperparameters import Logger as LoggerConfig
-except ImportError:
-    from hyperparameters import Logger as LoggerConfig
-
-
 class ExperimentLogger:
     def __init__(
         self,
-        cfg: LoggerConfig,
+        cfg: Dict[str, Any],
         run_name: Optional[str] = None,
         env_name: Optional[str] = None,
         agent_name: Optional[str] = None,
     ):
         self.cfg = cfg
-        self.env_name = env_name or cfg.env_name or "Environment"
-        self.agent_name = agent_name or cfg.agent_name or "Agent"
-        base_name = run_name or cfg.run_name or "sac"
-        if cfg.use_timestamp:
-            base_name = f"{base_name}-{datetime.now().strftime(cfg.timestamp_format)}"
+        self.env_name = env_name or cfg['env_name'] or "Environment"
+        self.agent_name = agent_name or cfg['agent_name'] or "Agent"
+        base_name = run_name or cfg['run_name'] or "sac"
+        if cfg['use_timestamp']:
+            base_name = f"{base_name}-{datetime.now().strftime(cfg['timestamp_format'])}"
 
         self.run_id = base_name
-        self.run_dir = Path(cfg.log_dir) / self.env_name / self.agent_name / self.run_id
+        self.run_dir = Path(cfg['log_dir']) / self.env_name / self.agent_name / self.run_id
         self.run_dir.mkdir(parents=True, exist_ok=True)
         self.metrics_writer = SummaryWriter(
             self.run_dir.as_posix(),
-            flush_secs=cfg.flush_secs,
+            flush_secs=cfg['flush_secs'],
             filename_suffix="_metrics",
         )
         self.hparams_writer = SummaryWriter(
             self.run_dir.as_posix(),
-            flush_secs=cfg.flush_secs,
+            flush_secs=cfg['flush_secs'],
             filename_suffix="_hparams",
         )
         self._hparams_logged = False
 
     def log_episode_metrics(self, episode_idx: int, reward: float, length: int) -> None:
-        if not self.cfg.log_episode_stats:
+        if not self.cfg['log_episode_stats']:
             return
         self.metrics_writer.add_scalar("Episode/Reward", reward, episode_idx)
         self.metrics_writer.add_scalar("Episode/Length", length, episode_idx)
 
     def log_q_values(self, q1_value: float, q2_value: float, step: int) -> None:
-        if not self.cfg.log_q_values:
+        if not self.cfg['log_q_values']:
             return
         self.metrics_writer.add_scalar("QValues/Q1", q1_value, step)
         self.metrics_writer.add_scalar("QValues/Q2", q2_value, step)

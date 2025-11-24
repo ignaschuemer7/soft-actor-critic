@@ -1,16 +1,9 @@
 import torch
 import numpy as np
 
-try:
-    from .hyperparameters import SACConfig
-    from .replay_buffer import ReplayBuffer, Transition
-    from .NNs import QNetwork, PolicyNetwork
-    from .experiment_logger import ExperimentLogger
-except ImportError:
-    from hyperparameters import SACConfig
-    from replay_buffer import ReplayBuffer, Transition
-    from NNs import QNetwork, PolicyNetwork
-    from experiment_logger import ExperimentLogger
+from .replay_buffer import ReplayBuffer, Transition
+from .models import QNetwork, PolicyNetwork
+from .utils.experiment_logger import ExperimentLogger
 import torch.optim as optim
 import gymnasium as gym
 from typing import Any, Dict, Optional
@@ -65,15 +58,15 @@ import random
 
 
 class SAC:
-    def __init__(self, env: gym.Env, config: SACConfig):
+    def __init__(self, env: gym.Env, config: dict):
 
         self.env = env
         self.config = config
-        self.device = torch.device(self.config.train.device)
-        self._set_seed(self.config.train.seed)
+        self.device = torch.device(self.config['train']['device'])
+        self._set_seed(self.config['train']['seed'])
 
         # Initialize Replay Buffer
-        self.replay_buffer = ReplayBuffer(self.config.buffer.capacity)
+        self.replay_buffer = ReplayBuffer(self.config['buffer']['capacity'])
 
         # Initialize Networks
         self.obs_size = env.observation_space.shape[0]
@@ -86,26 +79,26 @@ class SAC:
 
         # Entropy
         self.target_entropy = -float(self.action_size)
-        if self.config.sac.auto_entropy_tuning:
+        if self.config['sac']['auto_entropy_tuning']:
             # the log of alpha is optimized
             self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
             self.alpha_optimizer = optim.Adam(
-                [self.log_alpha], lr=self.config.sac.alpha_lr
+                [self.log_alpha], lr=self.config['sac']['alpha_lr']
             )
             # Convert log_alpha to alpha --> alpha = e^(log_alpha)
             self.alpha = self.log_alpha.exp()
         else:
-            self.alpha = torch.tensor(self.config.sac.alpha.get_alpha()).to(self.device)
+            self.alpha = torch.tensor(self.config['sac']['alpha']).to(self.device)
 
-        self.env_name = self.config.logger.env_name or self._infer_env_name(env)
-        self.agent_name = self.config.logger.agent_name or self.__class__.__name__
+        self.env_name = self.config['logger']['env_name'] or self._infer_env_name(env)
+        self.agent_name = self.config['logger']['agent_name'] or self.__class__.__name__
         self.logger = (
             ExperimentLogger(
-                self.config.logger,
+                self.config['logger'],
                 env_name=self.env_name,
                 agent_name=self.agent_name,
             )
-            if self.config.logger.enabled
+            if self.config['logger']['enabled']
             else None
         )
 
@@ -114,18 +107,18 @@ class SAC:
         self.q_net1 = QNetwork(
             obs_size=self.obs_size,
             action_size=self.action_size,
-            hidden_sizes=self.config.q_net.hidden_sizes,
-            hidden_activations=self.config.q_net.hidden_layers_act_fn,
-            output_activation=self.config.q_net.output_activation_fn,
-            seed=self.config.train.seed,
+            hidden_sizes=self.config['q_net']['hidden_sizes'],
+            hidden_activations=self.config['q_net']['hidden_layers_act'],
+            output_activation=self.config['q_net']['output_activation'],
+            seed=self.config['train']['seed'],
         ).to(self.device)
         self.q_net2 = QNetwork(
             obs_size=self.obs_size,
             action_size=self.action_size,
-            hidden_sizes=self.config.q_net.hidden_sizes,
-            hidden_activations=self.config.q_net.hidden_layers_act_fn,
-            output_activation=self.config.q_net.output_activation_fn,
-            seed=self.config.train.seed,
+            hidden_sizes=self.config['q_net']['hidden_sizes'],
+            hidden_activations=self.config['q_net']['hidden_layers_act'],
+            output_activation=self.config['q_net']['output_activation'],
+            seed=self.config['train']['seed'],
         ).to(self.device)
         self.q_net1_target = deepcopy(self.q_net1).to(self.device)
         self.q_net2_target = deepcopy(self.q_net2).to(self.device)
@@ -135,25 +128,25 @@ class SAC:
         self.policy_net = PolicyNetwork(
             obs_size=self.obs_size,
             action_size=self.action_size,
-            hidden_sizes=self.config.policy_net.hidden_sizes,
-            log_std_min=self.config.policy_net.log_std_min,
-            log_std_max=self.config.policy_net.log_std_max,
-            action_scale=self.config.policy_net.action_scale,
-            hidden_activations=self.config.policy_net.hidden_layers_act_fn,
-            output_activation=self.config.policy_net.output_activation_fn,
-            seed=self.config.train.seed,
+            hidden_sizes=self.config['policy_net']['hidden_sizes'],
+            log_std_min=self.config['policy_net']['log_std_min'],
+            log_std_max=self.config['policy_net']['log_std_max'],
+            action_scale=self.config['policy_net']['action_scale'],
+            hidden_activations=self.config['policy_net']['hidden_layers_act'],
+            output_activation=self.config['policy_net']['output_activation'],
+            seed=self.config['train']['seed'],
         ).to(self.device)
 
     def _init_optimizers(self) -> None:
         """Initialize Optimizers for Networks."""
         self.policy_optimizer = optim.Adam(
-            self.policy_net.parameters(), lr=self.config.sac.actor_lr
+            self.policy_net.parameters(), lr=self.config['sac']['actor_lr']
         )
         self.q1_optimizer = optim.Adam(
-            self.q_net1.parameters(), lr=self.config.sac.critic_lr
+            self.q_net1.parameters(), lr=self.config['sac']['critic_lr']
         )
         self.q2_optimizer = optim.Adam(
-            self.q_net2.parameters(), lr=self.config.sac.critic_lr
+            self.q_net2.parameters(), lr=self.config['sac']['critic_lr']
         )
 
     def _set_seed(self, seed: int) -> None:
@@ -201,13 +194,13 @@ class SAC:
     def can_update(self) -> bool:
         """Return True when the replay buffer contains enough samples to learn."""
         # Warn if warming_steps is greater than capacity --> it will never train
-        if self.config.train.warming_steps > self.config.buffer.capacity:
+        if self.config['train']['warming_steps'] > self.config['buffer']['capacity']:
             print("Warning: warming_steps is greater than replay buffer capacity.")
-        return len(self.replay_buffer) >= self.config.train.warming_steps
+        return len(self.replay_buffer) >= self.config['train']['warming_steps']
 
     def sample_batch(self) -> Transition:
         """Draw a mini-batch of transitions from the replay buffer."""
-        transitions = self.replay_buffer.sample(self.config.train.batch_size)
+        transitions = self.replay_buffer.sample(self.config['train']['batch_size'])
         batch = Transition(*zip(*transitions))
 
         states = torch.as_tensor(np.stack(batch.state), dtype=torch.float32).to(
@@ -247,7 +240,7 @@ class SAC:
             target_q1 = self.q_net1_target(next_states, next_actions)
             target_q2 = self.q_net2_target(next_states, next_actions)
             min_target_q = torch.min(target_q1, target_q2)
-            target_q_values = rewards + self.config.sac.gamma * (1 - dones) * (
+            target_q_values = rewards + self.config['sac']['gamma'] * (1 - dones) * (
                 min_target_q - alpha * next_log_pi
             )
         return target_q_values
@@ -306,7 +299,7 @@ class SAC:
         self,
         log_pi: Any,
     ) -> Dict[str, float]:
-        if self.config.sac.auto_entropy_tuning:
+        if self.config['sac']['auto_entropy_tuning']:
             # Compute alpha loss using the log of alpha (to ensure alpha is positive)
             alpha_loss = -(
                 self.log_alpha * (log_pi + self.target_entropy).detach()
@@ -328,8 +321,8 @@ class SAC:
             self.q_net1_target.parameters(), self.q_net1.parameters()
         ):
             target_param.data.copy_(
-                self.config.sac.tau * param.data
-                + (1.0 - self.config.sac.tau) * target_param.data
+                self.config['sac']['tau'] * param.data
+                + (1.0 - self.config['sac']['tau']) * target_param.data
             )
 
         # Update Q-network 2 target
@@ -337,8 +330,8 @@ class SAC:
             self.q_net2_target.parameters(), self.q_net2.parameters()
         ):
             target_param.data.copy_(
-                self.config.sac.tau * param.data
-                + (1.0 - self.config.sac.tau) * target_param.data
+                self.config['sac']['tau'] * param.data
+                + (1.0 - self.config['sac']['tau']) * target_param.data
             )
 
     def training_step(self):
@@ -402,9 +395,9 @@ class SAC:
                 total_steps += 1
                 # Perform training step if enough data is available
                 if self.can_update():
-                    for _ in range(self.config.train.gradient_steps_per_update):
+                    for _ in range(self.config['train']['gradient_steps_per_update']):
                         self.training_step()
-                if active_logger is not None and self.config.logger.log_q_values:
+                if active_logger is not None and self.config['logger']['log_q_values']:
                     self._log_q_values(
                         states=torch.FloatTensor(state).unsqueeze(0).to(self.device),
                         actions=torch.FloatTensor(action).unsqueeze(0).to(self.device),
@@ -416,7 +409,7 @@ class SAC:
             avg_return = np.mean(returns_window)
             best_avg_return = max(best_avg_return, avg_return)
 
-            if active_logger is not None and self.config.logger.log_episode_stats:
+            if active_logger is not None and self.config['logger']['log_episode_stats']:
                 active_logger.log_episode_metrics(
                     episode_idx=episode,
                     reward=episode_return,
@@ -432,7 +425,7 @@ class SAC:
             "final_avg_return": avg_return,
         }
         if active_logger is not None:
-            active_logger.log_hparams(self.config.to_dict(), metrics)
+            active_logger.log_hparams(self.config, metrics)
         return metrics
 
     def _log_q_values(
@@ -447,7 +440,7 @@ class SAC:
     def show_config(self, indent: int = 4) -> None:
         """Print the current configuration in a readable format."""
         pp = pprint.PrettyPrinter(indent=indent)
-        pp.pprint(self.config.to_dict())
+        pp.pprint(self.config)
 
     def print_net_arqhitectures(self) -> None:
         """Print the architectures of the networks."""
@@ -464,11 +457,3 @@ class SAC:
         return env.__class__.__name__
 
 
-if __name__ == "__main__":
-    # Example usage
-    config = SACConfig()
-    env = gym.make("InvertedPendulum-v5")
-    sac_agent = SAC(env, config)
-    print("* SAC agent initialized *")
-    sac_agent.show_config()
-    sac_agent.print_net_arqhitectures()

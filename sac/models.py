@@ -13,8 +13,8 @@ class QNetwork(nn.Module):
         obs_size,
         action_size,
         hidden_sizes,
-        hidden_activations=nn.ReLU,
-        output_activation=nn.Identity,
+        hidden_activations="relu",
+        output_activation="identity",
         seed=None,
     ):
         super(QNetwork, self).__init__()
@@ -54,8 +54,8 @@ class PolicyNetwork(nn.Module):
         log_std_max=2,
         seed=None,
         action_scale=1.0,
-        hidden_activations=nn.ReLU,
-        output_activation=nn.Identity,
+        hidden_activations="relu",
+        output_activation="identity",
     ):
         super(PolicyNetwork, self).__init__()
         if seed is not None:
@@ -103,12 +103,23 @@ class PolicyNetwork(nn.Module):
                 nn.init.zeros_(m.bias)
 
 
+_ACTIVATIONS = {
+    "relu": nn.ReLU,
+    "tanh": nn.Tanh,
+    "elu": nn.ELU,
+    "leaky_relu": nn.LeakyReLU,
+    "gelu": nn.GELU,
+    "selu": nn.SELU,
+    "identity": nn.Identity,
+}
+
+
 def build_mlp(
     obs_size: int,
     hidden_sizes: List[int],
     action_size: int,
-    hidden_activations: nn.Module = nn.Tanh,
-    output_activation: nn.Module = nn.Identity,
+    hidden_activations: str = "relu",
+    output_activation: str = "identity",
 ) -> nn.Sequential:
     """
     Build a simple MLP network.
@@ -126,25 +137,15 @@ def build_mlp(
     if not hidden_sizes:
         raise ValueError("hidden_sizes cannot be empty")
 
+    hidden_activations_fn = _ACTIVATIONS[hidden_activations]
+    output_activation_fn = _ACTIVATIONS[output_activation]
+
     layer_sizes = [obs_size] + hidden_sizes + [action_size]
 
     layers = []
     for i in range(len(layer_sizes) - 1):
-        act = hidden_activations if i < len(layer_sizes) - 2 else output_activation
+        act = hidden_activations_fn if i < len(layer_sizes) - 2 else output_activation_fn
         layers += [nn.Linear(layer_sizes[i], layer_sizes[i + 1]), act()]
     return nn.Sequential(*layers)
 
 
-if __name__ == "__main__":
-    # Example usage
-    obs_size = 3
-    action_size = 1
-    hidden_sizes = [256, 256]
-    q_net = QNetwork(obs_size, action_size, hidden_sizes, seed=0)
-    policy_net = PolicyNetwork(obs_size, action_size, hidden_sizes, seed=0)
-    sample_state = torch.randn(4, obs_size)
-    sample_action = torch.randn(4, action_size)
-    q_values = q_net(sample_state, sample_action)
-    actions, log_probs = policy_net.sample_action(sample_state)
-    print("Q-values:", q_values)
-    print("Actions:", actions)
