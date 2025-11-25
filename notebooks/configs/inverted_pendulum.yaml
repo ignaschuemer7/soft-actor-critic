@@ -49,3 +49,7 @@ logger:
   flush_secs: 10
   log_episode_stats: true
   log_q_values: true
+  save_model:
+    enabled: true
+    path: null
+
