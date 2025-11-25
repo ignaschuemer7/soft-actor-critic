@@ -1,0 +1,72 @@
+# Matplotlib style
+
+# Set lines and colors (if using line plots)
+axes.prop_cycle : cycler('color', ['4165c0', 'e770a2', 'f79a1e', '696969', 'ba7dcd', '5ac3be']) + cycler('linestyle', ['-', ':', '--', '-.',  '(5, (10, 3))', '(0, (3, 5, 1, 5))']) # '(0, (5, 10))'
+
+# Set markers and colors (if using scatter plots)
+# axes.prop_cycle : (cycler('marker', ['o', 's', '^', 'v', '<', '>']) + cycler('color', ['4165c0', 'e770a2', '696969', 'f79a1e', 'ba7dcd', '5ac3be']) + cycler('ls', [' ', ' ', ' ', ' ', ' ', ' ']))
+# lines.markersize : 3
+
+# Remove legend frame (if not using grid lines)
+# legend.frameon : False
+
+# Set grid lines and legend frame (if using grid lines)
+# axes.grid : True
+# axes.axisbelow : True
+# grid.linestyle : -
+# grid.color : k
+# grid.alpha : 0.5
+# grid.linewidth : 0.25
+# legend.frameon : True
+legend.framealpha : 0.5 
+# legend.fancybox : True
+# legend.numpoints : 1
+
+# ----------------------------------------------------------------------------------------------------
+# Fixed settings (do not change) 
+
+# Set default figure size
+figure.figsize : 3.38583, 2.5393725
+figure.dpi : 150
+
+# Set x axis
+xtick.direction : in
+xtick.major.size : 3
+xtick.major.width : 0.5
+xtick.minor.size : 1.5
+xtick.minor.width : 0.5
+xtick.minor.visible : False
+xtick.top : False
+
+# Set y axis
+ytick.direction : in
+ytick.major.size : 3
+ytick.major.width : 0.5
+ytick.minor.size : 1.5
+ytick.minor.width : 0.5
+ytick.minor.visible : False
+ytick.right : False
+
+# Set line widths
+axes.linewidth : 0.5
+lines.linewidth : 1.
+
+# Remove padding
+figure.constrained_layout.use: True
+figure.constrained_layout.h_pad: 0.005
+figure.constrained_layout.w_pad: 0.005
+figure.constrained_layout.hspace: 0.005
+figure.constrained_layout.wspace: 0.005
+
+# Use stix fonts
+font.size : 10
+font.family : STIXGeneral
+mathtext.fontset : stix
+
+# Make title and (x, y) labels bigger
+axes.titlesize: 20
+axes.labelsize: 20
+xtick.labelsize: 18
+ytick.labelsize: 16
+
+figure.titlesize: 16

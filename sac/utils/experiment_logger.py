@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+plt.style.use("custom.mplstyle")
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -35,18 +38,58 @@ class ExperimentLogger:
             filename_suffix="_hparams",
         )
         self._hparams_logged = False
+        self.episode_rewards = []
+        self.episode_lengths = []
+        self.q1_values = []
+        self.q2_values = []
 
     def log_episode_metrics(self, episode_idx: int, reward: float, length: int) -> None:
         if not self.cfg['log_episode_stats']:
             return
         self.metrics_writer.add_scalar("Episode/Reward", reward, episode_idx)
         self.metrics_writer.add_scalar("Episode/Length", length, episode_idx)
+        # Save for matplotlib graphs:
+        self.episode_rewards.append(reward)
+        self.episode_lengths.append(length)
+
+    def save_matplotlib_graphs(self) -> None:
+        if self.episode_rewards:
+            self.make_and_save_graph(
+                1,
+                [self.episode_rewards],
+                f'Episode Rewards Over Time - {self.env_name} - {self.agent_name}',
+                'Episode',
+                'Reward',
+                f'episode_rewards-{self.env_name}_{self.agent_name}.pdf',
+            )
+        if self.episode_lengths:
+            self.make_and_save_graph(
+                1,
+                [self.episode_lengths],
+                f'Episode Lengths Over Time - {self.env_name} - {self.agent_name}',
+                'Episode',
+                'Length',
+                f'episode_lengths-{self.env_name}_{self.agent_name}.pdf',
+            )
+        if self.q1_values and self.q2_values:
+            self.make_and_save_graph(
+                2,
+                [self.q1_values, self.q2_values],
+                f'Q-Values Over Time - {self.env_name} - {self.agent_name}',
+                'Step',
+                'Q-Value',
+                f'q_values-{self.env_name}_{self.agent_name}.pdf',
+                legend=['Q1', 'Q2']
+            )
+
 
     def log_q_values(self, q1_value: float, q2_value: float, step: int) -> None:
         if not self.cfg['log_q_values']:
             return
         self.metrics_writer.add_scalar("QValues/Q1", q1_value, step)
         self.metrics_writer.add_scalar("QValues/Q2", q2_value, step)
+        self.q1_values.append(q1_value)
+        self.q2_values.append(q2_value)
 
     def log_hparams(self, hparams: Dict[str, Any], metrics: Dict[str, float]) -> None:
         if self._hparams_logged:
@@ -93,3 +136,18 @@ class ExperimentLogger:
             else:
                 sanitized[key] = str(value)
         return sanitized
+
+    def make_and_save_graph(self, number_of_curves: int, data: list ,title: str, 
+                            xlabel: str, ylabel: str, filename: str, legend: list[str] = None) -> None:
+        plt.figure()
+        for i in range(number_of_curves):
+            plt.plot(data[i])
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        #plt.grid(True)
+        graph_path = self.run_dir / filename
+        if legend:
+            plt.legend(legend)
+        plt.savefig(graph_path)
+        plt.close()
