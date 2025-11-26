@@ -12,7 +12,12 @@ activation_lookup = {
     "identity": torch.nn.Identity,
 }
 
-def get_sb3_sac_params(env, config: Dict[str, Any], seed: int, env_id: str = "") -> Dict[str, Any]:
+
+def get_sb3_sac_params(
+    env, config: Dict[str, Any], seed: int, env_id: str = ""
+) -> Dict[str, Any]:
+    """Map custom SAC config to Stable Baselines3 SAC parameters."""
+
     sb3_activation = activation_lookup.get(
         config["policy_net"].get("hidden_layers_act", "relu"), torch.nn.ReLU
     )
@@ -35,19 +40,21 @@ def get_sb3_sac_params(env, config: Dict[str, Any], seed: int, env_id: str = "")
         "env": sb3_env,
         "learning_rate": config["sac"]["actor_lr"],  # SB3 uses one LR for all nets
         "buffer_size": config["buffer"]["capacity"],
-        "learning_starts": config['train']['warming_steps'],
+        "learning_starts": config["train"]["warming_steps"],
         "batch_size": config["train"]["batch_size"],
         "tau": config["sac"]["tau"],
         "gamma": config["sac"]["gamma"],
         "train_freq": (1, "step"),
         "gradient_steps": config["train"]["gradient_steps_per_update"],
-        "ent_coef": "auto" if config["sac"]["auto_entropy_tuning"] else config["sac"]["alpha"],
+        "ent_coef": (
+            "auto" if config["sac"]["auto_entropy_tuning"] else config["sac"]["alpha"]
+        ),
         "target_entropy": -sb3_env.action_space.shape[0],
         "policy_kwargs": sb3_policy_kwargs,
         "device": config["train"]["device"],
         "seed": seed,
         # "verbose": 1,
-        #"tensorboard_log": sb3_tensorboard_log,
+        # "tensorboard_log": sb3_tensorboard_log,
     }
 
     return sb3_params
