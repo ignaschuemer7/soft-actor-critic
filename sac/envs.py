@@ -23,10 +23,12 @@ class ConstantRewardEnv(gym.Env):
             low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32
         )
         self.current_step = 0
+        self.episode_reward = 0.0
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         self.current_step = 0
+        self.episode_reward = 0.0
         observation = np.zeros(1, dtype=np.float32)
         info = {}
         return observation, info
@@ -35,9 +37,15 @@ class ConstantRewardEnv(gym.Env):
         self.current_step += 1
         observation = np.zeros(1, dtype=np.float32)
         reward = self.constant_reward
+        self.episode_reward += reward
         terminated = self.current_step >= self.max_steps
         truncated = False
         info = {}
+        if terminated or truncated:
+            info["episode"] = {
+                "r": self.episode_reward,
+                "l": self.current_step
+            }
         return observation, reward, terminated, truncated, info
 
 
@@ -69,10 +77,12 @@ class QuadraticActionRewardEnv(gym.Env):
             low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32
         )
         self.current_step = 0
+        self.episode_reward = 0.0
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         self.current_step = 0
+        self.episode_reward = 0.0
         observation = np.zeros(1, dtype=np.float32)
         info = {}
         return observation, info
@@ -81,10 +91,16 @@ class QuadraticActionRewardEnv(gym.Env):
         self.current_step += 1
         a = np.clip(action[0], self.action_space.low[0], self.action_space.high[0])
         reward = -((a - self.target) ** 2)
+        self.episode_reward += reward
         observation = np.zeros(1, dtype=np.float32)
         terminated = self.current_step >= self.max_steps
         truncated = False
         info = {"action": a}
+        if terminated or truncated:
+            info["episode"] = {
+                "r": self.episode_reward,
+                "l": self.current_step
+            }
         return observation, reward, terminated, truncated, info
 
 
@@ -109,6 +125,7 @@ class RandomObsBinaryRewardEnv(gym.Env):
             low=-np.inf, high=np.inf, shape=(self.obs_dim,), dtype=np.float32
         )
         self.current_step = 0
+        self.episode_reward = 0.0
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
@@ -118,6 +135,7 @@ class RandomObsBinaryRewardEnv(gym.Env):
         observation = self.np_random.uniform(
             low=-1.0, high=1.0, size=self.obs_dim
         ).astype(np.float32)
+        self.episode_reward = 0.0
         info = {}
         return observation, info
 
@@ -133,6 +151,11 @@ class RandomObsBinaryRewardEnv(gym.Env):
         terminated = self.current_step >= self.max_steps
         truncated = False
         info = {"action": a}
+        if terminated or truncated:
+            info["episode"] = {
+                "r": self.episode_reward,
+                "l": self.current_step
+            }
         return observation, reward, terminated, truncated, info
 
 
@@ -175,12 +198,14 @@ class OneDPointMassReachEnv(gym.Env):
         )
         self.current_step = 0
         self.pos = 0.0
+        self.episode_reward = 0.0
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         self.current_step = 0
         self.pos = self.start_pos
         observation = np.array([self.pos], dtype=np.float32)
+        self.episode_reward = 0.0
         info = {}
         return observation, info
 
@@ -195,10 +220,15 @@ class OneDPointMassReachEnv(gym.Env):
         reached_goal = abs(self.pos - self.goal_pos) <= self.goal_tolerance
         if reached_goal:
             reward += self.goal_reward
+        self.episode_reward += reward
 
         terminated = reached_goal
         truncated = self.current_step >= self.max_steps
         observation = np.array([self.pos], dtype=np.float32)
         info = {"action": a}
-
+        if terminated or truncated:
+            info["episode"] = {
+                "r": self.episode_reward,
+                "l": self.current_step
+            }
         return observation, reward, terminated, truncated, info
