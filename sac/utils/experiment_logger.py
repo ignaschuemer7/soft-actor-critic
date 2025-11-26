@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-plt.style.use("/home/heisenberg/Documentos/GitHub/RL-SAC/sac/utils/custom.mplstyle")
-# plt.style.use("custom.mplstyle")
+from pathlib import Path
+
+plt.style.use((Path(__file__).parent / "custom.mplstyle").resolve())
 
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from torch.utils.tensorboard import SummaryWriter
+
 
 class ExperimentLogger:
     def __init__(
@@ -19,23 +21,27 @@ class ExperimentLogger:
         agent_name: Optional[str] = None,
     ):
         self.cfg = cfg
-        self.env_name = env_name or cfg['env_name'] or "Environment"
-        self.agent_name = agent_name or cfg['agent_name'] or "Agent"
-        base_name = run_name or cfg['run_name'] or "sac"
-        if cfg['use_timestamp']:
-            base_name = f"{base_name}-{datetime.now().strftime(cfg['timestamp_format'])}"
+        self.env_name = env_name or cfg["env_name"] or "Environment"
+        self.agent_name = agent_name or cfg["agent_name"] or "Agent"
+        base_name = run_name or cfg["run_name"] or "sac"
+        if cfg["use_timestamp"]:
+            base_name = (
+                f"{base_name}-{datetime.now().strftime(cfg['timestamp_format'])}"
+            )
 
         self.run_id = base_name
-        self.run_dir = Path(cfg['log_dir']) / self.env_name / self.agent_name / self.run_id
+        self.run_dir = (
+            Path(cfg["log_dir"]) / self.env_name / self.agent_name / self.run_id
+        )
         self.run_dir.mkdir(parents=True, exist_ok=True)
         self.metrics_writer = SummaryWriter(
             self.run_dir.as_posix(),
-            flush_secs=cfg['flush_secs'],
+            flush_secs=cfg["flush_secs"],
             filename_suffix="_metrics",
         )
         self.hparams_writer = SummaryWriter(
             self.run_dir.as_posix(),
-            flush_secs=cfg['flush_secs'],
+            flush_secs=cfg["flush_secs"],
             filename_suffix="_hparams",
         )
         self._hparams_logged = False
@@ -45,7 +51,7 @@ class ExperimentLogger:
         self.q2_values = []
 
     def log_episode_metrics(self, episode_idx: int, reward: float, length: int) -> None:
-        if not self.cfg['log_episode_stats']:
+        if not self.cfg["log_episode_stats"]:
             return
         self.metrics_writer.add_scalar("Episode/Reward", reward, episode_idx)
         self.metrics_writer.add_scalar("Episode/Length", length, episode_idx)
@@ -58,34 +64,33 @@ class ExperimentLogger:
             self.make_and_save_graph(
                 1,
                 [self.episode_rewards],
-                f'Episode Rewards Over Time - {self.env_name} - {self.agent_name}',
-                'Episode',
-                'Reward',
-                f'episode_rewards-{self.env_name}_{self.agent_name}.pdf',
+                f"Episode Rewards Over Time - {self.env_name} - {self.agent_name}",
+                "Episode",
+                "Reward",
+                f"episode_rewards-{self.env_name}_{self.agent_name}.pdf",
             )
         if self.episode_lengths:
             self.make_and_save_graph(
                 1,
                 [self.episode_lengths],
-                f'Episode Lengths Over Time - {self.env_name} - {self.agent_name}',
-                'Episode',
-                'Length',
-                f'episode_lengths-{self.env_name}_{self.agent_name}.pdf',
+                f"Episode Lengths Over Time - {self.env_name} - {self.agent_name}",
+                "Episode",
+                "Length",
+                f"episode_lengths-{self.env_name}_{self.agent_name}.pdf",
             )
         if self.q1_values and self.q2_values:
             self.make_and_save_graph(
                 2,
                 [self.q1_values, self.q2_values],
-                f'Q-Values Over Time - {self.env_name} - {self.agent_name}',
-                'Step',
-                'Q-Value',
-                f'q_values-{self.env_name}_{self.agent_name}.pdf',
-                legend=['Q1', 'Q2']
+                f"Q-Values Over Time - {self.env_name} - {self.agent_name}",
+                "Step",
+                "Q-Value",
+                f"q_values-{self.env_name}_{self.agent_name}.pdf",
+                legend=["Q1", "Q2"],
             )
 
-
     def log_q_values(self, q1_value: float, q2_value: float, step: int) -> None:
-        if not self.cfg['log_q_values']:
+        if not self.cfg["log_q_values"]:
             return
         self.metrics_writer.add_scalar("QValues/Q1", q1_value, step)
         self.metrics_writer.add_scalar("QValues/Q2", q2_value, step)
@@ -138,15 +143,23 @@ class ExperimentLogger:
                 sanitized[key] = str(value)
         return sanitized
 
-    def make_and_save_graph(self, number_of_curves: int, data: list ,title: str, 
-                            xlabel: str, ylabel: str, filename: str, legend: list[str] = None) -> None:
+    def make_and_save_graph(
+        self,
+        number_of_curves: int,
+        data: list,
+        title: str,
+        xlabel: str,
+        ylabel: str,
+        filename: str,
+        legend: list[str] = None,
+    ) -> None:
         plt.figure()
         for i in range(number_of_curves):
             plt.plot(data[i])
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        #plt.grid(True)
+        # plt.grid(True)
         graph_path = self.run_dir / filename
         if legend:
             plt.legend(legend)

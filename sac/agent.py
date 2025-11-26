@@ -14,6 +14,8 @@ from tqdm import tqdm
 import random
 import os
 
+from torch.utils.tensorboard import SummaryWriter
+
 # Initialize networks:
 #   Policy network πθ(a|s) with parameters θ
 #   Two Q-networks Qφ1(s,a) and Qφ2(s,a) with parameters φ1, φ2
@@ -434,12 +436,83 @@ class SAC:
                 save_path = active_logger.run_dir
             else:
                 os.makedirs(save_path, exist_ok=True)
-            
+
             model_path = os.path.join(save_path, "sac_agent.pth")
             self.save_agent(model_path)
             print(f"Agent saved to {model_path}")
-            
+
         return metrics
+
+    def eval_agent(
+        self,
+        num_episodes: int,
+        render_mode: Optional[str] = None,
+        tqdm_disable: bool = False,
+        print_returns: bool = False,
+        writer: Optional[SummaryWriter] = None,
+    ) -> float:
+        """Evaluate the agent's performance over a number of episodes."""
+        # If a render_mode is specified for evaluation, and it's different from the agent's env,
+        # try to create a new environment.
+        eval_env = self._get_render_environment(render_mode)
+
+        total_return = 0.0
+        for episode in tqdm(range(num_episodes), disable=tqdm_disable):
+            state, _ = eval_env.reset()
+            done = False
+            episode_return = 0.0
+            length = 0
+            while not done:
+                action = self.select_action(state, deterministic=True)
+                next_state, reward, terminated, truncated, _ = eval_env.step(action)
+                done = terminated or truncated
+                state = next_state
+                episode_return += reward
+                length += 1
+            total_return += episode_return
+            if print_returns:
+                print(f"Evaluation Episode {episode}, Return: {episode_return:.2f}")
+            if writer is not None:
+                writer.add_scalar("Eval/Episode/Return", episode_return, episode)
+                writer.add_scalar("Eval/Episode/Length", length, episode)
+        avg_return = total_return / num_episodes
+        if print_returns:
+            print(f"Average Return over {num_episodes} episodes: {avg_return:.2f}")
+
+        # Close the evaluation environment if it was newly created
+        if eval_env is not self.env:
+            eval_env.close()
+
+        return avg_return
+
+    def _get_render_environment(self, render_mode: Optional[str]) -> gym.Env:
+        """Get an environment suitable for rendering during evaluation."""
+        if (
+            render_mode is not None
+            and getattr(self.env, "render_mode", None) != render_mode
+        ):
+            if self.env.spec and self.env.spec.id:
+                try:
+                    print(
+                        f"Creating new environment for evaluation with render_mode='{render_mode}'"
+                    )
+                    eval_env = gym.make(self.env.spec.id, render_mode=render_mode)
+                    # Seed the new env for reproducibility if a seed is available in config.
+                    seed = self.config["train"].get("seed")
+                    if seed is not None:
+                        eval_env.reset(seed=seed)
+                        eval_env.action_space.seed(seed)
+                except Exception as e:
+                    print(
+                        f"Warning: Failed to create new env for rendering: {e}. Using original env."
+                    )
+                    eval_env = self.env
+            else:
+                print(
+                    "Warning: Cannot create new env for rendering as env.spec.id is not available. Using original env."
+                )
+                eval_env = self.env
+        return eval_env
 
     def _log_q_values(
         self, states: Any, actions: Any, logger: ExperimentLogger, step: int
@@ -449,6 +522,11 @@ class SAC:
             q1_values = self.q_net1(states, actions)
             q2_values = self.q_net2(states, actions)
             logger.log_q_values(q1_values.mean().item(), q2_values.mean().item(), step)
+
+    def _infer_env_name(self, env: gym.Env) -> str:
+        if getattr(env, "spec", None) is not None and getattr(env.spec, "id", None):
+            return env.spec.id
+        return env.__class__.__name__
 
     def show_config(self, indent: int = 4) -> None:
         """Print the current configuration in a readable format."""
@@ -463,11 +541,6 @@ class SAC:
         print(self.q_net1)
         print("\nQ-Network 2 Architecture:")
         print(self.q_net2)
-
-    def _infer_env_name(self, env: gym.Env) -> str:
-        if getattr(env, "spec", None) is not None and getattr(env.spec, "id", None):
-            return env.spec.id
-        return env.__class__.__name__
 
     def save_agent(self, filepath: str) -> None:
         """Save the agent's networks and optimizers to a file."""
