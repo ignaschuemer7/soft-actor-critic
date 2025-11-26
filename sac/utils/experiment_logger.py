@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
-# plt.style.use("/home/heisenberg/Documentos/GitHub/RL-SAC/sac/utils/custom.mplstyle")
-plt.style.use("custom.mplstyle")
+plt.style.use("/home/heisenberg/Documentos/GitHub/RL-SAC/sac/utils/custom.mplstyle")
+# plt.style.use("custom.mplstyle")
 
 from datetime import datetime
 from pathlib import Path
