@@ -558,6 +558,7 @@ class SAC:
             checkpoint["log_alpha"] = self.log_alpha
             checkpoint["alpha_optimizer_state_dict"] = self.alpha_optimizer.state_dict()
         torch.save(checkpoint, filepath)
+        # call self.logger.save to save any additional logger info (buffers, etc.)
 
     def load_agent(self, filepath: str) -> None:
         """Load the agent's networks and optimizers from a file."""
@@ -576,3 +577,4 @@ class SAC:
                 checkpoint["alpha_optimizer_state_dict"]
             )
             self.alpha = self.log_alpha.exp()
+        # call self.logger.load to load any additional logger info (buffers, etc.)

@@ -116,32 +116,15 @@ class ExperimentLogger:
         self.metrics_writer.close()
         self.hparams_writer.close()
 
+    # def save TODO
+
+    # def load TODO
+
     def __enter__(self) -> "ExperimentLogger":
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.close()
-
-    @staticmethod
-    def _prepare_hparams(hparams: Dict[str, Any]) -> Dict[str, Any]:
-        flat: Dict[str, Any] = {}
-
-        def _flatten(prefix: str, value: Any) -> None:
-            if isinstance(value, dict):
-                for key, val in value.items():
-                    child_key = f"{prefix}/{key}" if prefix else key
-                    _flatten(child_key, val)
-            else:
-                flat[prefix] = value
-
-        _flatten("", hparams)
-        sanitized: Dict[str, Any] = {}
-        for key, value in flat.items():
-            if isinstance(value, (int, float, bool)):
-                sanitized[key] = value
-            else:
-                sanitized[key] = str(value)
-        return sanitized
 
     def make_and_save_graph(
         self,
@@ -165,3 +148,24 @@ class ExperimentLogger:
             plt.legend(legend)
         plt.savefig(graph_path)
         plt.close()
+
+    @staticmethod
+    def _prepare_hparams(hparams: Dict[str, Any]) -> Dict[str, Any]:
+        flat: Dict[str, Any] = {}
+
+        def _flatten(prefix: str, value: Any) -> None:
+            if isinstance(value, dict):
+                for key, val in value.items():
+                    child_key = f"{prefix}/{key}" if prefix else key
+                    _flatten(child_key, val)
+            else:
+                flat[prefix] = value
+
+        _flatten("", hparams)
+        sanitized: Dict[str, Any] = {}
+        for key, value in flat.items():
+            if isinstance(value, (int, float, bool)):
+                sanitized[key] = value
+            else:
+                sanitized[key] = str(value)
+        return sanitized
