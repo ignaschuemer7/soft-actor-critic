@@ -45,6 +45,7 @@ class DonkeyUnitySimContoller:
 
     def _run_loop(self):
         asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self.server.start())
         self.loop.run_forever()
 
     def close_connection(self):
@@ -305,6 +306,7 @@ class DonkeyUnitySimHandler(IMesgHandler):
         """
         if data is not None:
             names = data['scene_names']
+            print(f"Available scene names: {names}")
             if self.verbose:
                 print("SceneNames:", names)
             self.send_load_scene(names[self.level_idx])

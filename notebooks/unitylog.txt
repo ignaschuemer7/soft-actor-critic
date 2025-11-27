@@ -1,9 +1,10 @@
-Mono path[0] = '/home/san/Documents/Ingenieria UdeSA/RL/DonkeySimLinux/donkey_sim_Data/Managed'
-Mono config path = '/home/san/Documents/Ingenieria UdeSA/RL/DonkeySimLinux/donkey_sim_Data/MonoBleedingEdge/etc'
+Found path: /home/san/Documents/Ingenieria UdeSA/RL/donkey_simulator/build_sdsandbox.x86_64
+Mono path[0] = '/home/san/Documents/Ingenieria UdeSA/RL/donkey_simulator/build_sdsandbox_Data/Managed'
+Mono config path = '/home/san/Documents/Ingenieria UdeSA/RL/donkey_simulator/build_sdsandbox_Data/Mono/etc'
+Preloaded 'ScreenSelector.so'
 Display 0 '0': 2560x1600 (primary device).
 Desktop is 2560 x 1600 @ 120 Hz
-Initialize engine version: 2020.3.49f1 (18249dd5551b)
-[Subsystems] Discovering subsystems at path /home/san/Documents/Ingenieria UdeSA/RL/DonkeySimLinux/donkey_sim_Data/UnitySubsystems
+Initialize engine version: 2018.2.7f1 (dad990bf2728)
 GfxDevice: creating device client; threaded=1
 Renderer: Mesa Intel(R) Graphics (RPL-P)
 Vendor:   Intel
@@ -16,51 +17,98 @@ L_ARB_texture_border_clamp GL_ARB_texture_buffer_object GL_ARB_texture_buffer_ob
 _10_10_10_rev GL_ARB_viewport_array GL_ATI_blend_equation_separate GL_ATI_texture_float GL_EXT_EGL_image_storage GL_EXT_EGL_image_storage_compression GL_EXT_EGL_sync GL_EXT_abgr GL_EXT_blend_equation_separate GL_EXT_debug_label GL_EXT_demote_to_helper_invocation GL_EXT_depth_bounds_test GL_EXT_draw_buffers2 GL_EXT_draw_instanced GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample GL_EXT_framebuffer_multisample_blit_scaled GL_EXT_framebuffer_object GL_EXT_framebuffer_sRGB GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_packed_depth_stencil GL_EXT_packed_float GL_EXT_pixel_buffer_object GL_EXT_polygon_offset_clamp GL_EXT_provoking_vertex GL_EXT_semaphore GL_EXT_semaphore_fd GL_EXT_shader_framebuffer_fetch GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_shader_integer_mix GL_EXT_shader_samples_identical GL_EXT_texture_array GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc GL_EXT_texture_filter_anisotropic GL_EXT_texture_integer GL_EXT_texture_sRGB GL_EXT
 _texture_sRGB_R8 GL_EXT_texture_sRGB_decode GL_EXT_texture_shadow_lod GL_EXT_texture_shared_exponent GL_EXT_texture_snorm GL_EXT_texture_storage GL_EXT_texture_swizzle GL_EXT_timer_query GL_EXT_transform_feedback GL_EXT_vertex_array_bgra GL_EXT_vertex_attrib_64bit GL_IBM_multimode_draw_arrays GL_INTEL_blackhole_render GL_INTEL_conservative_rasterization GL_INTEL_performance_query GL_INTEL_shader_atomic_float_minmax GL_INTEL_shader_integer_functions2 GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_KHR_context_flush_control GL_KHR_debug GL_KHR_no_error GL_KHR_parallel_shader_compile GL_KHR_robust_buffer_access_behavior GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_MESA_pack_invert GL_MESA_shader_integer_functions GL_MESA_texture_const_bandwidth GL_MESA_texture_signed_rgba GL_NV_alpha_to_coverage_dither_control GL_NV_compute_shader_derivatives GL_NV_conditional_render GL_NV_copy_image GL_NV_depth_clamp GL_N
 V_fragment_shader_interlock GL_NV_packed_depth_stencil GL_NV_texture_barrier GL_OES_EGL_image GL_S3_s3tc
-OPENGL LOG: Creating OpenGL 4.6 graphics device ; Context level  <OpenGL 4.5> ; Context handle 677450544
+OPENGL LOG: Creating OpenGL 4.6 graphics device ; Context level  <OpenGL 4.5> ; Context handle 811838672
 Begin MonoManager ReloadAssembly
-- Completed reload, in  0.089 seconds
+- Completed reload, in  0.062 seconds
 Default vsync count 0
-requesting resize 1211 x 1127
-resizing window to 1211 x 1127
+requesting resize 1024 x 768
+resizing window to 1024 x 768
 Desktop is 2560 x 1600 @ 120 Hz
-UnloadTime: 1.964988 ms
-SDSandbox Server starting.
-Server Listening on: 0.0.0.0:9090
-Waiting for a connection...
-SDSandbox Server starting.
-Server Listening on: 0.0.0.0:9092
-Waiting for a connection...
-Setting up 10 worker threads for Enlighten.
-  Thread -> id: 795c237fe6c0 -> priority: 1 
-  Thread -> id: 795c22ffd6c0 -> priority: 1 
-  Thread -> id: 795c227fc6c0 -> priority: 1 
-  Thread -> id: 795c21ffb6c0 -> priority: 1 
-  Thread -> id: 795c217fa6c0 -> priority: 1 
-  Thread -> id: 795c20ff96c0 -> priority: 1 
-  Thread -> id: 795baffff6c0 -> priority: 1 
-  Thread -> id: 795baf7fe6c0 -> priority: 1 
-  Thread -> id: 795baeffd6c0 -> priority: 1 
-  Thread -> id: 795bae7fc6c0 -> priority: 1 
-generated_track
-loaded scene
-Unloading 8 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 24.289859 ms
-JustOne removing instance.MainThDisp
-JustOne removing instance.SandboxServer
-loading: racePi2
-JustOne removing instance.SandboxPrivateAPIServer
+Failed setting thread niceness (priority) to 0 due to EACCES (errno 13) violation. Lowering niceness (raising priority) requires CAP_SYS_NICE or superuser.
+ 
+(Filename:  Line: 127)
 
-Unloading 34 unused Assets to reduce memory usage. Loaded Objects now: 4290.
-Total: 477.394539 ms (FindLiveObjects: 0.382281 ms CreateObjectMapping: 0.157131 ms MarkObjects: 2.966554 ms  DeleteObjects: 473.887788 ms)
+UnloadTime: 0.579000 ms
+Setting up 10 worker threads for Enlighten.
+  Thread -> id: 7211b91fa6c0 -> priority: 1 
+  Thread -> id: 7211b89f96c0 -> priority: 1 
+  Thread -> id: 721193fff6c0 -> priority: 1 
+  Thread -> id: 7211937fe6c0 -> priority: 1 
+  Thread -> id: 721192ffd6c0 -> priority: 1 
+  Thread -> id: 7211927fc6c0 -> priority: 1 
+  Thread -> id: 721191ffb6c0 -> priority: 1 
+  Thread -> id: 7211917fa6c0 -> priority: 1 
+  Thread -> id: 721190ff96c0 -> priority: 1 
+  Thread -> id: 721173fff6c0 -> priority: 1 
+Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 31.227000 ms
+
+Unloading 7 unused Assets to reduce memory usage. Loaded Objects now: 2671.
+Total: 3.303000 ms (FindLiveObjects: 1.410000 ms CreateObjectMapping: 0.077000 ms MarkObjects: 1.760000 ms  DeleteObjects: 0.048000 ms)
 
 Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 5.216571 ms
-JustOne removing instance.MainThDisp
-JustOne removing instance.SandboxServer
-JustOne removing instance.SandboxPrivateAPIServer
+UnloadTime: 17.987000 ms
 
-Unloading 1141 unused Assets to reduce memory usage. Loaded Objects now: 1047.
-Total: 4.200708 ms (FindLiveObjects: 0.194740 ms CreateObjectMapping: 0.081335 ms MarkObjects: 1.450691 ms  DeleteObjects: 2.473127 ms)
+Unloading 336 unused Assets to reduce memory usage. Loaded Objects now: 631.
+Total: 2.129000 ms (FindLiveObjects: 0.908000 ms CreateObjectMapping: 0.020000 ms MarkObjects: 0.574000 ms  DeleteObjects: 0.627000 ms)
 
-Server stopped.
-Server stopped.
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.265000 ms
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 2671.
+Total: 1.477000 ms (FindLiveObjects: 0.493000 ms CreateObjectMapping: 0.027000 ms MarkObjects: 0.943000 ms  DeleteObjects: 0.014000 ms)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 3.502000 ms
+
+Unloading 336 unused Assets to reduce memory usage. Loaded Objects now: 631.
+Total: 3.994000 ms (FindLiveObjects: 1.413000 ms CreateObjectMapping: 0.052000 ms MarkObjects: 0.990000 ms  DeleteObjects: 1.539000 ms)
+
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.556000 ms
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 2671.
+Total: 1.417000 ms (FindLiveObjects: 0.602000 ms CreateObjectMapping: 0.033000 ms MarkObjects: 0.767000 ms  DeleteObjects: 0.015000 ms)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.721000 ms
+
+Unloading 328 unused Assets to reduce memory usage. Loaded Objects now: 645.
+Total: 1.897000 ms (FindLiveObjects: 0.662000 ms CreateObjectMapping: 0.026000 ms MarkObjects: 0.609000 ms  DeleteObjects: 0.599000 ms)
+
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 0.430000 ms
+
+Unloading 6 unused Assets to reduce memory usage. Loaded Objects now: 2671.
+Total: 1.216000 ms (FindLiveObjects: 0.562000 ms CreateObjectMapping: 0.027000 ms MarkObjects: 0.535000 ms  DeleteObjects: 0.092000 ms)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 2.604000 ms
+
+Unloading 336 unused Assets to reduce memory usage. Loaded Objects now: 631.
+Total: 4.213000 ms (FindLiveObjects: 1.735000 ms CreateObjectMapping: 0.068000 ms MarkObjects: 1.141000 ms  DeleteObjects: 1.268000 ms)
+
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.314000 ms
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 2671.
+Total: 1.449000 ms (FindLiveObjects: 0.628000 ms CreateObjectMapping: 0.037000 ms MarkObjects: 0.763000 ms  DeleteObjects: 0.021000 ms)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 2.613000 ms
+
+Unloading 336 unused Assets to reduce memory usage. Loaded Objects now: 631.
+Total: 3.045000 ms (FindLiveObjects: 0.968000 ms CreateObjectMapping: 0.033000 ms MarkObjects: 0.908000 ms  DeleteObjects: 1.136000 ms)
+
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 1.205000 ms
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 2671.
+Total: 1.322000 ms (FindLiveObjects: 0.486000 ms CreateObjectMapping: 0.034000 ms MarkObjects: 0.789000 ms  DeleteObjects: 0.013000 ms)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 2.094000 ms
+
+Unloading 336 unused Assets to reduce memory usage. Loaded Objects now: 631.
+Total: 3.022000 ms (FindLiveObjects: 1.115000 ms CreateObjectMapping: 0.035000 ms MarkObjects: 0.958000 ms  DeleteObjects: 0.914000 ms)
+

@@ -196,9 +196,21 @@ class DonkeyVAEEnv(gym.Env):
             action[0] = prev_steering + diff
 
         # Repeat action if using frame_skip
+        reward = 0.0
+        done = False
+        info = {}
         for _ in range(self.frame_skip):
             self.viewer.take_action(action)
-            observation, reward, done, info = self.observe()
+            observation, r, d, i = self.viewer.observe()
+            reward += r
+            if d:
+                done = True
+            info.update(i)
+            if done:
+                break
+        
+        if self.vae is not None:
+            observation = self.vae.encode(observation)
 
         return self.postprocessing_step(action, observation, reward, done, info)
 
@@ -236,7 +248,8 @@ class DonkeyVAEEnv(gym.Env):
         if self.vae is None:
             return observation, reward, done, info
         # Encode the image
-        return self.vae.encode(observation), reward, done, info
+        encoded_obs = self.vae.encode(observation)
+        return encoded_obs, reward, done, info
 
     def close(self):
         if self.unity_process is not None:
