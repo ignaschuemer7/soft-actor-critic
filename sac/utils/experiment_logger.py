@@ -116,9 +116,26 @@ class ExperimentLogger:
         self.metrics_writer.close()
         self.hparams_writer.close()
 
-    # def save TODO
+    def save(self) -> None:
+        # save rewards and lengths to a file
+        rewards_path = self.run_dir / "episode_rewards.txt"
+        lengths_path = self.run_dir / "episode_lengths.txt"
+        with rewards_path.open("w") as f:
+            for reward in self.episode_rewards:
+                f.write(f"{reward}\n")
+        with lengths_path.open("w") as f:
+            for length in self.episode_lengths:
+                f.write(f"{length}\n")
 
-    # def load TODO
+    def load(self, rewards_path: str = None, lengths_path: str = None) -> None:
+        if rewards_path is None:
+            rewards_path = self.run_dir / "episode_rewards.txt"
+        if lengths_path is None:
+            lengths_path = self.run_dir / "episode_lengths.txt"
+        with open(rewards_path, "r") as f:
+            self.episode_rewards = [float(line.strip()) for line in f]
+        with open(lengths_path, "r") as f:
+            self.episode_lengths = [int(line.strip()) for line in f]
 
     def __enter__(self) -> "ExperimentLogger":
         return self
