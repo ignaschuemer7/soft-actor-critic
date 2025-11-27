@@ -437,10 +437,12 @@ class SAC:
             else:
                 os.makedirs(save_path, exist_ok=True)
 
-            model_path = os.path.join(save_path, "sac_agent.pth")
+            model_path = os.path.join(
+                save_path, "sac_agent.pth"
+            )  # Cambiarlo para que se guarden en save
             self.save_agent(model_path)
             print(f"Agent saved to {model_path}")
-        
+
         # save rewards and lengths as txt files
         if active_logger is not None:
             active_logger.save()
