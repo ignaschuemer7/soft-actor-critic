@@ -175,3 +175,8 @@ class SimHandler:
             print('Connection dropped')
 
         self.writer.close()
+        # Await writer.wait_closed() only in Python 3.7+
+        asyncio.create_task(self.writer.wait_closed())
+        self.reader = None
+        self.writer = None
+        print('Connection closed')

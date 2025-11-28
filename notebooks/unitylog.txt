@@ -5,7 +5,7 @@ Preloaded 'ScreenSelector.so'
 Display 0 '0': 2560x1600 (primary device).
 Desktop is 2560 x 1600 @ 120 Hz
 Initialize engine version: 2018.2.7f1 (dad990bf2728)
-GfxDevice: creating device client; threaded=0
+GfxDevice: creating device client; threaded=1
 Renderer: Mesa Intel(R) Graphics (RPL-P)
 Vendor:   Intel
 Version:  4.6 (Core Profile) Mesa 24.2.8-1ubuntu1~24.04.1
@@ -17,28 +17,36 @@ L_ARB_texture_border_clamp GL_ARB_texture_buffer_object GL_ARB_texture_buffer_ob
 _10_10_10_rev GL_ARB_viewport_array GL_ATI_blend_equation_separate GL_ATI_texture_float GL_EXT_EGL_image_storage GL_EXT_EGL_image_storage_compression GL_EXT_EGL_sync GL_EXT_abgr GL_EXT_blend_equation_separate GL_EXT_debug_label GL_EXT_demote_to_helper_invocation GL_EXT_depth_bounds_test GL_EXT_draw_buffers2 GL_EXT_draw_instanced GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample GL_EXT_framebuffer_multisample_blit_scaled GL_EXT_framebuffer_object GL_EXT_framebuffer_sRGB GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_packed_depth_stencil GL_EXT_packed_float GL_EXT_pixel_buffer_object GL_EXT_polygon_offset_clamp GL_EXT_provoking_vertex GL_EXT_semaphore GL_EXT_semaphore_fd GL_EXT_shader_framebuffer_fetch GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_shader_integer_mix GL_EXT_shader_samples_identical GL_EXT_texture_array GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc GL_EXT_texture_filter_anisotropic GL_EXT_texture_integer GL_EXT_texture_sRGB GL_EXT
 _texture_sRGB_R8 GL_EXT_texture_sRGB_decode GL_EXT_texture_shadow_lod GL_EXT_texture_shared_exponent GL_EXT_texture_snorm GL_EXT_texture_storage GL_EXT_texture_swizzle GL_EXT_timer_query GL_EXT_transform_feedback GL_EXT_vertex_array_bgra GL_EXT_vertex_attrib_64bit GL_IBM_multimode_draw_arrays GL_INTEL_blackhole_render GL_INTEL_conservative_rasterization GL_INTEL_performance_query GL_INTEL_shader_atomic_float_minmax GL_INTEL_shader_integer_functions2 GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_KHR_context_flush_control GL_KHR_debug GL_KHR_no_error GL_KHR_parallel_shader_compile GL_KHR_robust_buffer_access_behavior GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_MESA_pack_invert GL_MESA_shader_integer_functions GL_MESA_texture_const_bandwidth GL_MESA_texture_signed_rgba GL_NV_alpha_to_coverage_dither_control GL_NV_compute_shader_derivatives GL_NV_conditional_render GL_NV_copy_image GL_NV_depth_clamp GL_N
 V_fragment_shader_interlock GL_NV_packed_depth_stencil GL_NV_texture_barrier GL_OES_EGL_image GL_S3_s3tc
-OPENGL LOG: Creating OpenGL 4.6 graphics device ; Context level  <OpenGL 4.5> ; Context handle 529206976
+OPENGL LOG: Creating OpenGL 4.6 graphics device ; Context level  <OpenGL 4.5> ; Context handle 437534784
 Begin MonoManager ReloadAssembly
-- Completed reload, in  0.097 seconds
-UnloadTime: 0.684000 ms
+- Completed reload, in  0.089 seconds
+Default vsync count 0
+requesting resize 1024 x 768
+resizing window to 1024 x 768
+Desktop is 2560 x 1600 @ 120 Hz
+Failed setting thread niceness (priority) to 0 due to EACCES (errno 13) violation. Lowering niceness (raising priority) requires CAP_SYS_NICE or superuser.
+ 
+(Filename:  Line: 127)
+
+UnloadTime: 0.912000 ms
 Setting up 10 worker threads for Enlighten.
-  Thread -> id: 732f37fff6c0 -> priority: 1 
-  Thread -> id: 732f377fe6c0 -> priority: 1 
-  Thread -> id: 732f36ffd6c0 -> priority: 1 
-  Thread -> id: 732f367fc6c0 -> priority: 1 
-  Thread -> id: 732f35ffb6c0 -> priority: 1 
-  Thread -> id: 732f357fa6c0 -> priority: 1 
-  Thread -> id: 732f34ff96c0 -> priority: 1 
-  Thread -> id: 732f13fff6c0 -> priority: 1 
-  Thread -> id: 732f137fe6c0 -> priority: 1 
-  Thread -> id: 732f12ffd6c0 -> priority: 1 
+  Thread -> id: 7285ef5fe6c0 -> priority: 1 
+  Thread -> id: 7285eedfd6c0 -> priority: 1 
+  Thread -> id: 7285ee5fc6c0 -> priority: 1 
+  Thread -> id: 7285eddfb6c0 -> priority: 1 
+  Thread -> id: 7285ed5fa6c0 -> priority: 1 
+  Thread -> id: 7285ecdf96c0 -> priority: 1 
+  Thread -> id: 7285cbfff6c0 -> priority: 1 
+  Thread -> id: 7285cb7fe6c0 -> priority: 1 
+  Thread -> id: 7285caffd6c0 -> priority: 1 
+  Thread -> id: 7285ca7fc6c0 -> priority: 1 
 Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 27.224000 ms
+UnloadTime: 71.987000 ms
 found 504 path points. to load
  
 (Filename: ./Runtime/Export/Debug.bindings.h Line: 43)
 
 
-Unloading 8 unused Assets to reduce memory usage. Loaded Objects now: 6922.
-Total: 1.939000 ms (FindLiveObjects: 0.829000 ms CreateObjectMapping: 0.046000 ms MarkObjects: 1.025000 ms  DeleteObjects: 0.038000 ms)
+Unloading 8 unused Assets to reduce memory usage. Loaded Objects now: 6982.
+Total: 2.976000 ms (FindLiveObjects: 1.321000 ms CreateObjectMapping: 0.066000 ms MarkObjects: 1.549000 ms  DeleteObjects: 0.040000 ms)
 
