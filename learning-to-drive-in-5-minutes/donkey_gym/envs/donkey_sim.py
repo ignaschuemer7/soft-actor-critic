@@ -144,7 +144,6 @@ class DonkeyUnitySimHandler(IMesgHandler):
         """
         Close socket.
         """
-        self.sock.close()
         self.sock = None
 
     def on_recv_message(self, message):

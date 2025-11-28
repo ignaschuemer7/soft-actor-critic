@@ -5,10 +5,10 @@ sac:
   gamma: 0.99
   tau: 0.005
   alpha: 0.1
-  auto_entropy_tuning: false
-  actor_lr: 0.0003
-  critic_lr: 0.0003
-  alpha_lr: 0.0003
+  auto_entropy_tuning: true
+  actor_lr: 0.0007
+  critic_lr: 0.0007
+  alpha_lr: 0.0007
 
 # Q-Network parameters
 q_net:
@@ -27,14 +27,14 @@ policy_net:
 
 # Replay Buffer parameters
 buffer:
-  capacity: 1000000
+  capacity: 200000
 
 # Training parameters
 train:
   gradient_steps_per_update: 1
   seed: 0
   batch_size: 256
-  warming_steps: 1000
+  warming_steps: 2000
   device: 'cuda'
 
 # Logger parameters
@@ -48,7 +48,7 @@ logger:
   timestamp_format: '%Y_%m_%d-%H_%M_%S'
   flush_secs: 10
   log_episode_stats: true
-  log_q_values: true
+  log_q_values: false
   save_model:
     enabled: true
     path: null

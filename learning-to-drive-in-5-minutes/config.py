@@ -38,7 +38,7 @@ N_COMMAND_HISTORY = 20
 # Max cross track error (used in normal mode to reset the car)
 MAX_CTE_ERROR = 2.0
 # Level to use for training
-LEVEL = 0
+LEVEL = 2
 
 # Action repeat
 FRAME_SKIP = 1
