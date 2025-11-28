@@ -15,6 +15,7 @@ import random
 import os
 
 from torch.utils.tensorboard import SummaryWriter
+from sac.utils.logger_utils import save_rewards, save_lengths
 
 # Initialize networks:
 #   Policy network πθ(a|s) with parameters θ
@@ -443,9 +444,10 @@ class SAC:
             self.save_agent(model_path)
             print(f"Agent saved to {model_path}")
 
-        # save rewards and lengths as txt files
+        # save rewards and lengths as .npy files
         if active_logger is not None:
-            active_logger.save()
+            save_rewards(active_logger.run_dir, active_logger.episode_rewards)
+            save_lengths(active_logger.run_dir, active_logger.episode_lengths)
 
         return metrics
 

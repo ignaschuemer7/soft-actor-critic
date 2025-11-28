@@ -1,5 +1,6 @@
 from stable_baselines3.common.callbacks import BaseCallback
 from torch.utils.tensorboard import SummaryWriter
+from sac.utils.logger_utils import save_lengths, save_rewards
 import os
 
 class RewardLoggingCallback(BaseCallback):
@@ -31,14 +32,14 @@ class RobustEpisodeLogger(BaseCallback):
         writer: SummaryWriter,
         max_episodes: int,
         save_dir: str = "",
-        save_txt: bool = True,
+        save_npy: bool = True,
         verbose: int = 0,
     ):
         super().__init__(verbose)
         self.writer = writer
         self.max_episodes = max_episodes
         self.save_dir = save_dir
-        self.save_txt = save_txt
+        self.save_npy = save_npy
 
         self.current_episode_reward = 0.0
         self.current_episode_length = 0
@@ -77,14 +78,14 @@ class RobustEpisodeLogger(BaseCallback):
 
                 # Early stop if reached max episodes
                 if self.episode_count >= self.max_episodes:
-                    if self.save_txt:
+                    if self.save_npy:
+                        # Ensure save directory exists
                         os.makedirs(self.save_dir, exist_ok=True)
-                        with open(f"{self.save_dir}/episode_rewards.txt", "w") as f:
-                            for r in self.episode_rewards:
-                                f.write(f"{r}\n")
-                        with open(f"{self.save_dir}/episode_lengths.txt", "w") as f:
-                            for l in self.episode_lengths:
-                                f.write(f"{l}\n")
+                        # Save rewards and lengths as .npy files
+                        save_rewards(self.save_dir, self.episode_rewards)
+                        save_lengths(self.save_dir, self.episode_lengths)
+                    if self.verbose:
+                        print(f"Saved episode rewards and lengths to {self.save_dir}")
 
                     print("Reached max episodes → early stopping training.")
                     return False  # <- SB3 stops training
