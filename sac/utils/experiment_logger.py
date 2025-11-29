@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from torch.utils.tensorboard import SummaryWriter
+from sac.utils.logger_utils import make_and_save_graph
 
 
 class ExperimentLogger:
@@ -61,31 +62,34 @@ class ExperimentLogger:
 
     def save_matplotlib_graphs(self) -> None:
         if self.episode_rewards:
-            self.make_and_save_graph(
+            make_and_save_graph(
                 1,
                 [self.episode_rewards],
                 f"Episode Rewards Over Time - {self.env_name} - {self.agent_name}",
                 "Episode",
                 "Reward",
                 f"episode_rewards-{self.env_name}_{self.agent_name}.pdf",
+                self.run_dir,
             )
         if self.episode_lengths:
-            self.make_and_save_graph(
+            make_and_save_graph(
                 1,
                 [self.episode_lengths],
                 f"Episode Lengths Over Time - {self.env_name} - {self.agent_name}",
                 "Episode",
                 "Length",
                 f"episode_lengths-{self.env_name}_{self.agent_name}.pdf",
+                self.run_dir,
             )
         if self.q1_values and self.q2_values:
-            self.make_and_save_graph(
+            make_and_save_graph(
                 2,
                 [self.q1_values, self.q2_values],
                 f"Q-Values Over Time - {self.env_name} - {self.agent_name}",
                 "Step",
                 "Q-Value",
                 f"q_values-{self.env_name}_{self.agent_name}.pdf",
+                self.run_dir,
                 legend=["Q1", "Q2"],
             )
 
@@ -116,38 +120,11 @@ class ExperimentLogger:
         self.metrics_writer.close()
         self.hparams_writer.close()
 
-    # def save TODO
-
-    # def load TODO
-
     def __enter__(self) -> "ExperimentLogger":
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.close()
-
-    def make_and_save_graph(
-        self,
-        number_of_curves: int,
-        data: list,
-        title: str,
-        xlabel: str,
-        ylabel: str,
-        filename: str,
-        legend: list[str] = None,
-    ) -> None:
-        plt.figure()
-        for i in range(number_of_curves):
-            plt.plot(data[i])
-        plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        # plt.grid(True)
-        graph_path = self.run_dir / filename
-        if legend:
-            plt.legend(legend)
-        plt.savefig(graph_path)
-        plt.close()
+        self.close()    
 
     @staticmethod
     def _prepare_hparams(hparams: Dict[str, Any]) -> Dict[str, Any]:
