@@ -512,6 +512,8 @@ class SAC:
                     "Warning: Cannot create new env for rendering as env.spec.id is not available. Using original env."
                 )
                 eval_env = self.env
+        else:
+            eval_env = self.env
         return eval_env
 
     def _log_q_values(
