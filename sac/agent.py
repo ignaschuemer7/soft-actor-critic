@@ -397,7 +397,6 @@ class SAC:
                 episode_return += reward
                 episode_steps += 1
                 total_steps += 1
-                # Perform training step if enough data is available
                 if (
                     self.can_update()
                     and total_steps % self.config["train"].get("update_frequency", 1)
