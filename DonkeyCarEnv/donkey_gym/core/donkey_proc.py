@@ -2,6 +2,7 @@
 
 import subprocess
 import os
+import shutil
 
 
 class DonkeyUnityProcess(object):
@@ -25,8 +26,9 @@ class DonkeyUnityProcess(object):
 
         # Launch Unity environment
         if headless:
+            print("Headless mode requested. Using -batchmode (GPU rendering without window).")
             self.process = subprocess.Popen(
-                [sim_path, '-nographics', '-batchmode'] + port_args)
+                [sim_path, '-batchmode'] + port_args)
         else:
             self.process = subprocess.Popen(
                 [sim_path] + port_args)

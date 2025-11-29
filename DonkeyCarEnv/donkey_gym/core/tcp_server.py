@@ -170,13 +170,16 @@ class SimHandler:
     def close(self):
         """Close the connection"""
         if self.msg_handler is not None:
-            self.msg_handler.on_disconnect()
+            handler = self.msg_handler
             self.msg_handler = None
+            handler.on_disconnect()
             print('Connection dropped')
 
-        self.writer.close()
-        # Await writer.wait_closed() only in Python 3.7+
-        asyncio.create_task(self.writer.wait_closed())
+        if self.writer:
+            self.writer.close()
+            # Await writer.wait_closed() only in Python 3.7+
+            asyncio.create_task(self.writer.wait_closed())
+            
         self.reader = None
         self.writer = None
         print('Connection closed')
