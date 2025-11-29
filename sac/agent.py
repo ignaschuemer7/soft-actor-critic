@@ -397,8 +397,14 @@ class SAC:
                 episode_steps += 1
                 total_steps += 1
                 # Perform training step if enough data is available
-                if self.can_update():
-                    for _ in range(self.config["train"]["gradient_steps_per_update"]):
+                if (
+                    self.can_update()
+                    and total_steps % self.config["train"].get("update_frequency", 1)
+                    == 0
+                ):
+                    for _ in range(
+                        self.config["train"].get("gradient_steps_per_update", 1)
+                    ):
                         self.training_step()
                 if active_logger is not None and self.config["logger"]["log_q_values"]:
                     self._log_q_values(

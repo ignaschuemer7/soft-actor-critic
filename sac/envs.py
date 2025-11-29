@@ -42,10 +42,7 @@ class ConstantRewardEnv(gym.Env):
         truncated = False
         info = {}
         if terminated or truncated:
-            info["episode"] = {
-                "r": self.episode_reward,
-                "l": self.current_step
-            }
+            info["episode"] = {"r": self.episode_reward, "l": self.current_step}
         return observation, reward, terminated, truncated, info
 
 
@@ -97,10 +94,7 @@ class QuadraticActionRewardEnv(gym.Env):
         truncated = False
         info = {"action": a}
         if terminated or truncated:
-            info["episode"] = {
-                "r": self.episode_reward,
-                "l": self.current_step
-            }
+            info["episode"] = {"r": self.episode_reward, "l": self.current_step}
         return observation, reward, terminated, truncated, info
 
 
@@ -152,10 +146,7 @@ class RandomObsBinaryRewardEnv(gym.Env):
         truncated = False
         info = {"action": a}
         if terminated or truncated:
-            info["episode"] = {
-                "r": self.episode_reward,
-                "l": self.current_step
-            }
+            info["episode"] = {"r": self.episode_reward, "l": self.current_step}
         return observation, reward, terminated, truncated, info
 
 
@@ -227,8 +218,5 @@ class OneDPointMassReachEnv(gym.Env):
         observation = np.array([self.pos], dtype=np.float32)
         info = {"action": a}
         if terminated or truncated:
-            info["episode"] = {
-                "r": self.episode_reward,
-                "l": self.current_step
-            }
+            info["episode"] = {"r": self.episode_reward, "l": self.current_step}
         return observation, reward, terminated, truncated, info
