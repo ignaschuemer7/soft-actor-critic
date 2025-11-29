@@ -1,2 +1,5 @@
 # Ignore all .pyc files inside this directory and its subdirectories
 **/*.pyc
+donkey_simulator.zip
+donkey_simulator/*
+notebooks/unitylog.txt
