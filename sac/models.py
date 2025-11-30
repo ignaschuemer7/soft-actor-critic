@@ -19,7 +19,7 @@ class QNetwork(nn.Module):
     ):
         super(QNetwork, self).__init__()
         if seed is not None:
-            torch.manual_seed(seed)
+           torch.manual_seed(seed)
         self.net = build_mlp(
             obs_size + action_size,
             hidden_sizes,

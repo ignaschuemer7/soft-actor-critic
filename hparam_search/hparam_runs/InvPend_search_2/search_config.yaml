@@ -1,0 +1,6 @@
+search_space:
+  sac:
+    alpha_lr:
+      type: loguniform
+      low: 1.0e-5
+      high: 1.0e-1

@@ -37,7 +37,7 @@ def main(args):
     elif env_name == "OneDPointMassReachEnv":
         env = OneDPointMassReachEnv()
     else:
-        env = gym.make(env_name)
+        env = gym.make(env_name, max_episode_steps=config["train"]["max_episode_steps"])
 
     # Initialize agent
     agent = SAC(env, config)
