@@ -20,6 +20,7 @@ This project details a modular and extensible implementation of the Soft Actor-C
     <img src="assets/donkey_car.gif" alt="DonkeyCar Agent in action" width="400"/>
     
   - This environment utilizes a Variational Auto-Encoder (VAE) as a feature extractor. The VAE compresses high-dimensional image observations into a lower-dimensional latent space that the SAC agent can effectively use for decision-making.
+  - The VAE implementation, simulator wrapper, and communication code are adapted from [Learning to Drive Smoothly in Minutes](https://github.com/araffin/learning-to-drive-in-5-minutes).
 
 - **Custom Gym Environments:**
   - `OneDPointMassReachEnv`: A simple 1D point mass environment.
@@ -31,7 +32,7 @@ This project details a modular and extensible implementation of the Soft Actor-C
 
 - **Soft Actor-Critic (SAC) Algorithm:** A full implementation of the SAC algorithm, including the twin Q-network architecture and the automated entropy tuning.
 - **Hyperparameter Tuning with Optuna:** The repository includes a script for hyperparameter optimization using [Optuna](https://optuna.org/). The search space can be easily configured using YAML files.
-- **Robust Logging System:** The logging system uses [TensorBoard](https://www.tensorflow.org/tensorboard) to log metrics, hyperparameters, and experiment results. It also saves Matplotlib graphs of the episode rewards, lengths, and Q-values.
+- **Logging System:** The logging system uses [TensorBoard](https://www.tensorflow.org/tensorboard) to log metrics, hyperparameters, and experiment results. It also saves Matplotlib graphs of the episode rewards, lengths, and Q-values.
 - **Configuration via YAML Files:** All the hyperparameters for the agent and the training process can be easily configured using YAML files.
 - **Jupyter Notebooks for Experimentation:** The repository includes several Jupyter notebooks that demonstrate how to use the SAC agent in different environments.
 - **Custom Environments:** The project includes several custom environments that can be used to test and debug the agent.
