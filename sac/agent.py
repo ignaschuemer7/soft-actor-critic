@@ -548,7 +548,7 @@ class SAC:
         pp = pprint.PrettyPrinter(indent=indent)
         pp.pprint(self.config)
 
-    def print_net_arqhitectures(self) -> None:
+    def print_net_architectures(self) -> None:
         """Print the architectures of the networks."""
         print("Policy Network Architecture:")
         print(self.policy_net)

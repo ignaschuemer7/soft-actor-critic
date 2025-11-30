@@ -252,10 +252,7 @@ class DonkeyUnitySimHandler(IMesgHandler):
         # 1 per timesteps + throttle
         throttle_reward = THROTTLE_REWARD_WEIGHT * (self.last_throttle / MAX_THROTTLE)
         
-        # Penalize for being far from center
-        # cte_penalty = math.fabs(self.cte) / self.max_cte_error
-        
-        return 1 + throttle_reward # - cte_penalty
+        return 1 + throttle_reward
 
     # ------ Socket interface ----------- #
 

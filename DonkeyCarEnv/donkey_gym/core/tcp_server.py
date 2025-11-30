@@ -177,7 +177,6 @@ class SimHandler:
 
         if self.writer:
             self.writer.close()
-            # Await writer.wait_closed() only in Python 3.7+
             asyncio.create_task(self.writer.wait_closed())
             
         self.reader = None
