@@ -251,6 +251,7 @@ class DonkeyUnitySimHandler(IMesgHandler):
             return REWARD_CRASH - CRASH_SPEED_WEIGHT * norm_throttle
         # 1 per timesteps + throttle
         throttle_reward = THROTTLE_REWARD_WEIGHT * (self.last_throttle / MAX_THROTTLE)
+        
         return 1 + throttle_reward
 
     # ------ Socket interface ----------- #

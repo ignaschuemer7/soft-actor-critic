@@ -25,12 +25,14 @@ class Autoencoder(nn.Module):
         input_dimension: Tuple[int, int, int] = INPUT_DIM,
         learning_rate: float = 0.0001,
         normalization_mode: str = "rl",
+        channels: list = [16, 32, 64, 128],
     ):
         super().__init__()
         # AE input and output shapes
         self.z_size = z_size
         self.input_dimension = input_dimension
         self.learning_rate = learning_rate
+        self.channels = channels
 
         # Training params
         self.normalization_mode = normalization_mode
@@ -64,6 +66,15 @@ class Autoencoder(nn.Module):
         :param observation: Cropped image
         :return: corresponding latent vector
         """
+        if observation.shape != self.input_dimension:
+            # Resize if needed (e.g. if model expects 64x96 but env gives 80x160)
+            # Input is H, W, C
+            observation = cv2.resize(
+                observation,
+                (self.input_dimension[1], self.input_dimension[0]),
+                interpolation=cv2.INTER_AREA,
+            )
+
         assert (
             observation.shape == self.input_dimension
         ), f"{observation.shape} != {self.input_dimension}"
@@ -96,14 +107,17 @@ class Autoencoder(nn.Module):
         :param input_shape:
         """
         # n_channels, kernel_size, strides, activation, padding=0
+        c_in = input_shape[0]
+        c1, c2, c3, c4 = self.channels
+
         self.encoder = nn.Sequential(
-            nn.Conv2d(input_shape[0], 16, kernel_size=4, stride=2),
+            nn.Conv2d(c_in, c1, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.Conv2d(16, 32, kernel_size=4, stride=2),
+            nn.Conv2d(c1, c2, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=4, stride=2),
+            nn.Conv2d(c2, c3, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 128, kernel_size=4, stride=2),
+            nn.Conv2d(c3, c4, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
         )
 
@@ -115,13 +129,13 @@ class Autoencoder(nn.Module):
         self.decode_linear = nn.Linear(self.z_size, flatten_size)
 
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2),
+            nn.ConvTranspose2d(c4, c3, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2),
+            nn.ConvTranspose2d(c3, c2, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(32, 16, kernel_size=5, stride=2),
+            nn.ConvTranspose2d(c2, c1, kernel_size=5, stride=2, padding=2, output_padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(16, input_shape[0], kernel_size=4, stride=2),
+            nn.ConvTranspose2d(c1, c_in, kernel_size=4, stride=2, padding=1),
             nn.Sigmoid(),
         )
 
@@ -155,6 +169,7 @@ class Autoencoder(nn.Module):
             "learning_rate": self.learning_rate,
             "input_dimension": self.input_dimension,
             "normalization_mode": self.normalization_mode,
+            "channels": self.channels,
         }
 
         th.save({"state_dict": self.state_dict(), "data": data}, save_path)
@@ -184,9 +199,118 @@ class Autoencoder(nn.Module):
                     load_path = candidate
 
         device = th.device("cuda") if th.cuda.is_available() else th.device("cpu")
-        saved_variables = th.load(load_path, map_location=device, weights_only=False)
-        model = cls(**saved_variables["data"])
-        model.load_state_dict(saved_variables["state_dict"])
+        try:
+            saved_variables = th.load(
+                load_path, map_location=device, weights_only=False
+            )
+            model = cls(**saved_variables["data"])
+            model.load_state_dict(saved_variables["state_dict"])
+            model.to(device)
+            return model
+        except RuntimeError as e:
+            if "Invalid magic number" in str(e) or "pickle" in str(e):
+                print(f"Failed to load as PyTorch model. Attempting legacy pickle load: {e}")
+                return cls.load_from_legacy_pickle(load_path)
+            raise e
+
+    @classmethod
+    def load_from_legacy_pickle(cls, load_path: str) -> "Autoencoder":
+        import pickle
+
+        with open(load_path, "rb") as f:
+            data = pickle.load(f)
+
+        if isinstance(data, tuple) and len(data) == 2:
+            params, weights = data
+        else:
+            raise ValueError("Unknown pickle format")
+
+        # Infer architecture from weights
+        # Weights:
+        # 0: Conv1 w (4, 4, 3, 32)
+        # 1: Conv1 b (32,)
+        # ...
+        # 6: Conv4 w (4, 4, 128, 256)
+        # 8: Dense Mu (6144, 32)
+
+        channels = [32, 64, 128, 256]  # Inferred from the weights analysis
+        z_size = weights[8].shape[1]  # 32
+
+        # Infer input dimension
+        # Flatten size = 6144.
+        # Last conv channels = 256.
+        # Spatial = 6144 / 256 = 24.
+        # 24 = 4 * 6.
+        # With 4 layers of stride 2 (factor 16):
+        # Height = 4 * 16 = 64.
+        # Width = 6 * 16 = 96.
+        input_dimension = (64, 96, 3)
+
+        print(f"Legacy model inferred: z_size={z_size}, input_dim={input_dimension}, channels={channels}")
+
+        model = cls(z_size=z_size, input_dimension=input_dimension, channels=channels)
+
+        # Assign weights
+        state_dict = model.state_dict()
+        
+        # Helper to convert TF kernel (H, W, In, Out) to PyTorch (Out, In, H, W)
+        def convert_conv(w):
+            return th.tensor(w.transpose(3, 2, 0, 1))
+        
+        # Helper for ConvTranspose: TF (H, W, Out, In) -> PyTorch (In, Out, H, W)
+        # Wait, PyTorch ConvTranspose2d weight is (In_channels, Out_channels/groups, H, W)
+        # In `_build`:
+        # ConvTranspose2d(c4, c3, ...) -> Input c4 (256), Output c3 (128).
+        # Weight shape: (256, 128, 4, 4).
+        # TF Weight 14: (4, 4, 128, 256). 
+        # So transpose (3, 2, 0, 1) -> (256, 128, 4, 4). Correct.
+        def convert_conv_t(w):
+            return th.tensor(w.transpose(3, 2, 0, 1))
+
+        # Helper for Linear: TF (In, Out) -> PyTorch (Out, In)
+        def convert_linear(w):
+            return th.tensor(w.T)
+        
+        new_state_dict = {}
+        
+        # Encoder
+        new_state_dict["encoder.0.weight"] = convert_conv(weights[0])
+        new_state_dict["encoder.0.bias"] = th.tensor(weights[1])
+        
+        new_state_dict["encoder.2.weight"] = convert_conv(weights[2])
+        new_state_dict["encoder.2.bias"] = th.tensor(weights[3])
+        
+        new_state_dict["encoder.4.weight"] = convert_conv(weights[4])
+        new_state_dict["encoder.4.bias"] = th.tensor(weights[5])
+        
+        new_state_dict["encoder.6.weight"] = convert_conv(weights[6])
+        new_state_dict["encoder.6.bias"] = th.tensor(weights[7])
+        
+        # Bottleneck (Mu) - Weight 8, 9
+        # Ignore LogVar (Weight 10, 11) for deterministic encoding
+        new_state_dict["encode_linear.weight"] = convert_linear(weights[8])
+        new_state_dict["encode_linear.bias"] = th.tensor(weights[9])
+        
+        # Decoder
+        # Weight 12: Dense (32, 6144). Bias 13.
+        new_state_dict["decode_linear.weight"] = convert_linear(weights[12])
+        new_state_dict["decode_linear.bias"] = th.tensor(weights[13])
+        
+        # ConvTranspose
+        new_state_dict["decoder.0.weight"] = convert_conv_t(weights[14])
+        new_state_dict["decoder.0.bias"] = th.tensor(weights[15])
+        
+        new_state_dict["decoder.2.weight"] = convert_conv_t(weights[16])
+        new_state_dict["decoder.2.bias"] = th.tensor(weights[17])
+        
+        new_state_dict["decoder.4.weight"] = convert_conv_t(weights[18])
+        new_state_dict["decoder.4.bias"] = th.tensor(weights[19])
+        
+        new_state_dict["decoder.6.weight"] = convert_conv_t(weights[20])
+        new_state_dict["decoder.6.bias"] = th.tensor(weights[21])
+        
+        model.load_state_dict(new_state_dict)
+        device = th.device("cuda") if th.cuda.is_available() else th.device("cpu")
         model.to(device)
         return model
 
