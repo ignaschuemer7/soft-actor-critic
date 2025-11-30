@@ -1,12 +1,19 @@
-# Core dependencies
-torch
-numpy
-gymnasium
-
-# Logging and configuration
-tensorboard
-pyyaml
-
-# For development and notebooks
-jupyter
-ipykernel
+gym==0.26.2
+gymnasium==1.2.0
+imgaug==0.4.0
+joblib==1.4.2
+matplotlib==3.10.7
+numpy==2.3.5
+opencv_python==4.8.1.78
+opencv_python_headless==4.10.0.84
+optuna==4.6.0
+Pillow==10.1.0
+Pillow==12.0.0
+PyYAML==6.0.2
+PyYAML==6.0.3
+six==1.16.0
+stable_baselines3==2.7.0
+torch==2.7.1+cu126
+torchvision==0.24.1
+tqdm==4.66.5
+tqdm==4.66.4
