@@ -67,7 +67,6 @@ class SAC:
         self.env = env
         self.config = config
         self.device = torch.device(self.config["train"]["device"])
-        self._set_seed(self.config["train"]["seed"])
 
         # Initialize Replay Buffer
         self.replay_buffer = ReplayBuffer(self.config["buffer"]["capacity"])
@@ -81,16 +80,17 @@ class SAC:
         # Initialize Optimizers
         self._init_optimizers()
 
+        self._set_seed(self.config["train"]["seed"])
+
         # Entropy
         self.target_entropy = -float(self.action_size)
         if self.config["sac"]["auto_entropy_tuning"]:
-            # the log of alpha is optimized
-            self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
+            self.log_alpha = torch.tensor(np.log(self.config["sac"]["alpha"]),
+                                          requires_grad=True, device=self.device)
+            self.alpha = torch.exp(self.log_alpha).detach()
             self.alpha_optimizer = optim.Adam(
                 [self.log_alpha], lr=self.config["sac"]["alpha_lr"]
             )
-            # Convert log_alpha to alpha --> alpha = e^(log_alpha)
-            self.alpha = self.log_alpha.exp()
         else:
             self.alpha = torch.tensor(self.config["sac"]["alpha"]).to(self.device)
 
@@ -122,7 +122,7 @@ class SAC:
             hidden_sizes=self.config["q_net"]["hidden_sizes"],
             hidden_activations=self.config["q_net"]["hidden_layers_act"],
             output_activation=self.config["q_net"]["output_activation"],
-            seed=self.config["train"]["seed"],
+            seed=self.config["train"]["seed"]+1, # different seed for different network
         ).to(self.device)
         self.q_net1_target = deepcopy(self.q_net1).to(self.device)
         self.q_net2_target = deepcopy(self.q_net2).to(self.device)
@@ -445,7 +445,7 @@ class SAC:
             print(f"Agent saved to {model_path}")
 
         # save rewards and lengths as .npy files
-        if active_logger is not None:
+        if active_logger is not None and self.config["logger"]["log_episode_stats"]:
             save_rewards(active_logger.run_dir, active_logger.episode_rewards)
             save_lengths(active_logger.run_dir, active_logger.episode_lengths)
 

@@ -1,0 +1,6 @@
+Configuration loaded:
+{'buffer': {'capacity': 1000000}, 'logger': {'agent_name': 'SAC', 'enabled': True, 'env_name': 'InvertedPendulum-v5', 'experiment_name': 'sac-hparam-search-trial-4', 'flush_secs': 10, 'log_dir': 'hparam_search/hparam_runs/InvPend_search_2/trial_4', 'log_episode_stats': True, 'log_q_values': True, 'run_name': 'sac-inverted-pendulum', 'save_model': {'enabled': True, 'path': None}, 'timestamp_format': '%Y_%m_%d-%H_%M_%S', 'use_timestamp': True}, 'policy_net': {'action_scale': 1.0, 'hidden_layers_act': 'relu', 'hidden_sizes': [256, 256], 'log_std_max': 2, 'log_std_min': -20, 'output_activation': 'identity'}, 'q_net': {'hidden_layers_act': 'relu', 'hidden_sizes': [256, 256], 'output_activation': 'identity'}, 'sac': {'actor_lr': 0.0003, 'alpha': 0.1, 'alpha_lr': 0.053428904707925176, 'auto_entropy_tuning': True, 'critic_lr': 0.0003, 'gamma': 0.99, 'tau': 0.005}, 'train': {'batch_size': 256, 'device': 'cpu', 'gradient_steps_per_update': 1, 'max_episode_steps': 250, 'num_episodes': 300, 'seed': 0, 'warming_steps': 1000}}
+Agent initialized. Starting training...
+Agent saved to hparam_search/hparam_runs/InvPend_search_2/trial_4/InvertedPendulum-v5/SAC/sac-inverted-pendulum-2025_11_29-17_21_13/sac_agent.pth
+Final average return: 128.36
+Training finished.

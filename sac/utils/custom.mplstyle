@@ -1,26 +1,7 @@
 # Matplotlib style
 
-# Set lines and colors (if using line plots)
-axes.prop_cycle : cycler('color', ['4165c0', 'e770a2', 'f79a1e', '696969', 'ba7dcd', '5ac3be']) + cycler('linestyle', ['-', ':', '--', '-.',  '(5, (10, 3))', '(0, (3, 5, 1, 5))']) # '(0, (5, 10))'
-
-# Set markers and colors (if using scatter plots)
-# axes.prop_cycle : (cycler('marker', ['o', 's', '^', 'v', '<', '>']) + cycler('color', ['4165c0', 'e770a2', '696969', 'f79a1e', 'ba7dcd', '5ac3be']) + cycler('ls', [' ', ' ', ' ', ' ', ' ', ' ']))
-# lines.markersize : 3
-
-# Remove legend frame (if not using grid lines)
-# legend.frameon : False
-
-# Set grid lines and legend frame (if using grid lines)
-# axes.grid : True
-# axes.axisbelow : True
-# grid.linestyle : -
-# grid.color : k
-# grid.alpha : 0.5
-# grid.linewidth : 0.25
-# legend.frameon : True
-legend.framealpha : 0.5 
-# legend.fancybox : True
-# legend.numpoints : 1
+# Set lines and colors (all continuous lines)
+axes.prop_cycle : cycler('color', ['#0000FF', '#FFA500', '#006400', '#8B0000']) + cycler('linestyle', ['-'])
 
 # ----------------------------------------------------------------------------------------------------
 # Fixed settings (do not change) 
@@ -70,3 +51,6 @@ xtick.labelsize: 18
 ytick.labelsize: 16
 
 figure.titlesize: 16
+
+# Legend
+legend.framealpha : 0.5

@@ -1,0 +1,48 @@
+buffer:
+  capacity: 1000000
+logger:
+  agent_name: SAC
+  enabled: true
+  env_name: InvertedPendulum-v5
+  experiment_name: sac-hparam-search-trial-1
+  flush_secs: 10
+  log_dir: hparam_search/hparam_runs/InvPend_search_3/trial_1
+  log_episode_stats: true
+  log_q_values: true
+  run_name: sac-inverted-pendulum
+  save_model:
+    enabled: true
+    path: null
+  timestamp_format: '%Y_%m_%d-%H_%M_%S'
+  use_timestamp: true
+policy_net:
+  action_scale: 1.0
+  hidden_layers_act: relu
+  hidden_sizes:
+  - 256
+  - 256
+  log_std_max: 2
+  log_std_min: -20
+  output_activation: identity
+q_net:
+  hidden_layers_act: relu
+  hidden_sizes:
+  - 256
+  - 256
+  output_activation: identity
+sac:
+  actor_lr: 0.0003
+  alpha: 0.0034891903005514753
+  alpha_lr: 0.00012208110090230164
+  auto_entropy_tuning: true
+  critic_lr: 0.0003
+  gamma: 0.99
+  tau: 0.005
+train:
+  batch_size: 256
+  device: cpu
+  gradient_steps_per_update: 1
+  max_episode_steps: 250
+  num_episodes: 300
+  seed: 0
+  warming_steps: 1000
