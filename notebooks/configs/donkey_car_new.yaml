@@ -6,20 +6,20 @@ sac:
   tau: 0.01
   alpha: 0.1
   auto_entropy_tuning: true
-  actor_lr: 0.00075
-  critic_lr: 0.00075
-  alpha_lr: 0.00075
+  actor_lr: 0.0003
+  critic_lr: 0.0003
+  alpha_lr: 0.0001
 
 # Q-Network parameters
 q_net:
-  hidden_sizes: [256, 256, 32]
-  hidden_layers_act: 'elu'
+  hidden_sizes: [128, 256, 64]
+  hidden_layers_act: 'relu'
   output_activation: 'identity'
 
 # Policy Network parameters
 policy_net:
-  hidden_sizes: [256, 256, 64]
-  hidden_layers_act: 'elu'
+  hidden_sizes: [128, 256, 64]
+  hidden_layers_act: 'relu'
   output_activation: 'identity'
   log_std_min: -20
   log_std_max: 2
@@ -27,12 +27,12 @@ policy_net:
 
 # Replay Buffer parameters
 buffer:
-  capacity: 50000
+  capacity: 100000
 
 # Training parameters
 train:
-  gradient_steps_per_update: 15
-  update_frequency: 5
+  gradient_steps_per_update: 10
+  update_frequency: 6
   seed: 42
   batch_size: 256
   warming_steps: 1000

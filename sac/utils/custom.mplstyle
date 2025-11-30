@@ -27,7 +27,7 @@ legend.framealpha : 0.5
 
 # Set default figure size
 figure.figsize : 3.38583, 2.5393725
-figure.dpi : 150
+figure.dpi : 250
 
 # Set x axis
 xtick.direction : in
@@ -65,8 +65,8 @@ mathtext.fontset : stix
 
 # Make title and (x, y) labels bigger
 axes.titlesize: 20
-axes.labelsize: 20
-xtick.labelsize: 18
-ytick.labelsize: 16
+axes.labelsize: 12
+xtick.labelsize: 12
+ytick.labelsize: 12
 
-figure.titlesize: 16
+figure.titlesize: 12

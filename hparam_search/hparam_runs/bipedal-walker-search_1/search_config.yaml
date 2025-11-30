@@ -1,0 +1,11 @@
+search_space:
+  train:
+    alpha_lr:
+      type: uniform
+      low: 1.0e-5
+      high: 1.0e-2
+  sac:
+    alpha:
+      type: uniform
+      low: 0.01
+      high: 0.5

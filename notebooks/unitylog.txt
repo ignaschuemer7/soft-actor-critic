@@ -17,9 +17,9 @@ L_ARB_texture_border_clamp GL_ARB_texture_buffer_object GL_ARB_texture_buffer_ob
 _10_10_10_rev GL_ARB_viewport_array GL_ATI_blend_equation_separate GL_ATI_texture_float GL_EXT_EGL_image_storage GL_EXT_EGL_image_storage_compression GL_EXT_EGL_sync GL_EXT_abgr GL_EXT_blend_equation_separate GL_EXT_debug_label GL_EXT_demote_to_helper_invocation GL_EXT_depth_bounds_test GL_EXT_draw_buffers2 GL_EXT_draw_instanced GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample GL_EXT_framebuffer_multisample_blit_scaled GL_EXT_framebuffer_object GL_EXT_framebuffer_sRGB GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_packed_depth_stencil GL_EXT_packed_float GL_EXT_pixel_buffer_object GL_EXT_polygon_offset_clamp GL_EXT_provoking_vertex GL_EXT_semaphore GL_EXT_semaphore_fd GL_EXT_shader_framebuffer_fetch GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_shader_integer_mix GL_EXT_shader_samples_identical GL_EXT_texture_array GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc GL_EXT_texture_filter_anisotropic GL_EXT_texture_integer GL_EXT_texture_sRGB GL_EXT
 _texture_sRGB_R8 GL_EXT_texture_sRGB_decode GL_EXT_texture_shadow_lod GL_EXT_texture_shared_exponent GL_EXT_texture_snorm GL_EXT_texture_storage GL_EXT_texture_swizzle GL_EXT_timer_query GL_EXT_transform_feedback GL_EXT_vertex_array_bgra GL_EXT_vertex_attrib_64bit GL_IBM_multimode_draw_arrays GL_INTEL_blackhole_render GL_INTEL_conservative_rasterization GL_INTEL_performance_query GL_INTEL_shader_atomic_float_minmax GL_INTEL_shader_integer_functions2 GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_KHR_context_flush_control GL_KHR_debug GL_KHR_no_error GL_KHR_parallel_shader_compile GL_KHR_robust_buffer_access_behavior GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_MESA_pack_invert GL_MESA_shader_integer_functions GL_MESA_texture_const_bandwidth GL_MESA_texture_signed_rgba GL_NV_alpha_to_coverage_dither_control GL_NV_compute_shader_derivatives GL_NV_conditional_render GL_NV_copy_image GL_NV_depth_clamp GL_N
 V_fragment_shader_interlock GL_NV_packed_depth_stencil GL_NV_texture_barrier GL_OES_EGL_image GL_S3_s3tc
-OPENGL LOG: Creating OpenGL 4.6 graphics device ; Context level  <OpenGL 4.5> ; Context handle 651923136
+OPENGL LOG: Creating OpenGL 4.6 graphics device ; Context level  <OpenGL 4.5> ; Context handle 593990736
 Begin MonoManager ReloadAssembly
-- Completed reload, in  0.067 seconds
+- Completed reload, in  0.103 seconds
 Default vsync count 0
 requesting resize 3200 x 1800
 resizing window to 3200 x 1800
@@ -28,18 +28,18 @@ Failed setting thread niceness (priority) to 0 due to EACCES (errno 13) violatio
  
 (Filename:  Line: 127)
 
-UnloadTime: 1.288000 ms
+UnloadTime: 1.251000 ms
 Setting up 10 worker threads for Enlighten.
-  Thread -> id: 72f64cff96c0 -> priority: 1 
-  Thread -> id: 72f61ffff6c0 -> priority: 1 
-  Thread -> id: 72f61f7fe6c0 -> priority: 1 
-  Thread -> id: 72f61effd6c0 -> priority: 1 
-  Thread -> id: 72f61e7fc6c0 -> priority: 1 
-  Thread -> id: 72f61dffb6c0 -> priority: 1 
-  Thread -> id: 72f61d7fa6c0 -> priority: 1 
-  Thread -> id: 72f61cff96c0 -> priority: 1 
-  Thread -> id: 72f5fffff6c0 -> priority: 1 
-  Thread -> id: 72f5ff7fe6c0 -> priority: 1 
+  Thread -> id: 7b2f8a7fc6c0 -> priority: 1 
+  Thread -> id: 7b2f89ffb6c0 -> priority: 1 
+  Thread -> id: 7b2f897fa6c0 -> priority: 1 
+  Thread -> id: 7b2f88ff96c0 -> priority: 1 
+  Thread -> id: 7b2f6bfff6c0 -> priority: 1 
+  Thread -> id: 7b2f6b7fe6c0 -> priority: 1 
+  Thread -> id: 7b2f6affd6c0 -> priority: 1 
+  Thread -> id: 7b2f6a7fc6c0 -> priority: 1 
+  Thread -> id: 7b2f69ffb6c0 -> priority: 1 
+  Thread -> id: 7b2f697fa6c0 -> priority: 1 
 async texture load: failed to load Roads0124_20_L2 from /home/ignacio/Documents/Ignacio UdeSa/4to/2do semestre/RL/TPS/RL-SAC/DonkeyCarEnv/donkey_simulator/build_sdsandbox_Data/sharedassets1.assets.resS
 
  
@@ -71,12 +71,12 @@ async texture load: failed to load ReflectionProbe-0 from /home/ignacio/Document
 (Filename:  Line: 408)
 
 Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 44.563000 ms
+UnloadTime: 47.762000 ms
 found 504 path points. to load
  
 (Filename: ./Runtime/Export/Debug.bindings.h Line: 43)
 
 
 Unloading 8 unused Assets to reduce memory usage. Loaded Objects now: 6984.
-Total: 3.572000 ms (FindLiveObjects: 1.684000 ms CreateObjectMapping: 0.138000 ms MarkObjects: 1.704000 ms  DeleteObjects: 0.046000 ms)
+Total: 3.502000 ms (FindLiveObjects: 1.233000 ms CreateObjectMapping: 0.066000 ms MarkObjects: 2.133000 ms  DeleteObjects: 0.069000 ms)
 

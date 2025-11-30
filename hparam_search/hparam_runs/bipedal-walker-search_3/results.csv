@@ -1,0 +1,2 @@
+number,value,datetime_start,datetime_complete,duration,params_sac.alpha,params_train.alpha_lr,state
+0,,2025-11-29 23:38:52.222566,2025-11-30 02:07:58.647614,0 days 02:29:06.425048,0.4049339546759478,0.005465938522718293,FAIL

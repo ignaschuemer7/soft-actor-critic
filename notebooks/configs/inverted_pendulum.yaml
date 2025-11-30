@@ -12,13 +12,13 @@ sac:
 
 # Q-Network parameters
 q_net:
-  hidden_sizes: [256, 256]
+  hidden_sizes: [128, 128]
   hidden_layers_act: 'relu'
   output_activation: 'identity'
 
 # Policy Network parameters
 policy_net:
-  hidden_sizes: [256, 256]
+  hidden_sizes: [128, 128]
   hidden_layers_act: 'relu'
   output_activation: 'identity'
   log_std_min: -20
@@ -27,7 +27,7 @@ policy_net:
 
 # Replay Buffer parameters
 buffer:
-  capacity: 1000000
+  capacity: 100000
 
 # Training parameters
 train:
