@@ -1,12 +1,10 @@
 import argparse
 import yaml
 import gymnasium as gym
-import torch
 import json
 
 from sac.agent import SAC
 from sac.envs import *
-from tqdm import tqdm
 
 
 def main(args):
@@ -37,13 +35,17 @@ def main(args):
     elif env_name == "OneDPointMassReachEnv":
         env = OneDPointMassReachEnv()
     else:
-        env = gym.make(env_name, max_episode_steps=config["train"]["max_episode_steps"])
+        env = gym.make(
+            env_name, max_episode_steps=config["train"].get("max_episode_steps", 1000)
+        )
 
     # Initialize agent
     agent = SAC(env, config)
 
     print("Agent initialized. Starting training...")
-    metrics = agent.run_training_loop(num_episodes=config["train"]["num_episodes"])
+    metrics = agent.run_training_loop(
+        num_episodes=config["train"].get("num_episodes", 1000)
+    )
 
     print(f"Final average return: {metrics['final_avg_return']}")
     print("Training finished.")

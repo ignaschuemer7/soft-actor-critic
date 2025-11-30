@@ -1,5 +1,3 @@
-# SAC agent implementation
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,7 +17,7 @@ class QNetwork(nn.Module):
     ):
         super(QNetwork, self).__init__()
         if seed is not None:
-           torch.manual_seed(seed)
+            torch.manual_seed(seed)
         self.net = build_mlp(
             obs_size + action_size,
             hidden_sizes,
@@ -144,8 +142,8 @@ def build_mlp(
 
     layers = []
     for i in range(len(layer_sizes) - 1):
-        act = hidden_activations_fn if i < len(layer_sizes) - 2 else output_activation_fn
+        act = (
+            hidden_activations_fn if i < len(layer_sizes) - 2 else output_activation_fn
+        )
         layers += [nn.Linear(layer_sizes[i], layer_sizes[i + 1]), act()]
     return nn.Sequential(*layers)
-
-

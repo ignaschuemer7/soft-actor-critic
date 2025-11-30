@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import torch as th
 from torch import nn
+import os
+from pathlib import Path
 
 from ..config_ae import INPUT_DIM, RAW_IMAGE_SHAPE, ROI
 
@@ -133,7 +135,9 @@ class Autoencoder(nn.Module):
             nn.ReLU(),
             nn.ConvTranspose2d(c3, c2, kernel_size=4, stride=2, padding=1),
             nn.ReLU(),
-            nn.ConvTranspose2d(c2, c1, kernel_size=5, stride=2, padding=2, output_padding=1),
+            nn.ConvTranspose2d(
+                c2, c1, kernel_size=5, stride=2, padding=2, output_padding=1
+            ),
             nn.ReLU(),
             nn.ConvTranspose2d(c1, c_in, kernel_size=4, stride=2, padding=1),
             nn.Sigmoid(),
@@ -176,28 +180,6 @@ class Autoencoder(nn.Module):
 
     @classmethod
     def load(cls, load_path: str) -> "Autoencoder":
-        import os
-        from pathlib import Path  # Added import
-
-        # Fix for users pointing to extracted archive data.pkl
-        if isinstance(load_path, Path):
-            if load_path.name == "data.pkl" and "archive" in load_path.parts:
-                # Try to find vae.pth in the parent directory of 'archive'
-                # load_path is .../archive/data.pkl
-                # expected vae.pth is .../vae.pth
-                base_dir = load_path.parent.parent
-                candidate = base_dir / "vae.pth"
-                if candidate.exists():
-                    print(f"Redirecting load from {load_path} to {candidate}")
-                    load_path = candidate
-        elif isinstance(load_path, str):  # Handle string paths too, for robustness
-            if load_path.endswith("data.pkl") and "archive" in load_path:
-                base_dir = os.path.dirname(os.path.dirname(load_path))
-                candidate = os.path.join(base_dir, "vae.pth")
-                if os.path.exists(candidate):
-                    print(f"Redirecting load from {load_path} to {candidate}")
-                    load_path = candidate
-
         device = th.device("cuda") if th.cuda.is_available() else th.device("cpu")
         try:
             saved_variables = th.load(
@@ -209,7 +191,9 @@ class Autoencoder(nn.Module):
             return model
         except RuntimeError as e:
             if "Invalid magic number" in str(e) or "pickle" in str(e):
-                print(f"Failed to load as PyTorch model. Attempting legacy pickle load: {e}")
+                print(
+                    f"Failed to load as PyTorch model. Attempting legacy pickle load: {e}"
+                )
                 return cls.load_from_legacy_pickle(load_path)
             raise e
 
@@ -246,23 +230,25 @@ class Autoencoder(nn.Module):
         # Width = 6 * 16 = 96.
         input_dimension = (64, 96, 3)
 
-        print(f"Legacy model inferred: z_size={z_size}, input_dim={input_dimension}, channels={channels}")
+        print(
+            f"Legacy model inferred: z_size={z_size}, input_dim={input_dimension}, channels={channels}"
+        )
 
         model = cls(z_size=z_size, input_dimension=input_dimension, channels=channels)
 
         # Assign weights
         state_dict = model.state_dict()
-        
+
         # Helper to convert TF kernel (H, W, In, Out) to PyTorch (Out, In, H, W)
         def convert_conv(w):
             return th.tensor(w.transpose(3, 2, 0, 1))
-        
+
         # Helper for ConvTranspose: TF (H, W, Out, In) -> PyTorch (In, Out, H, W)
         # Wait, PyTorch ConvTranspose2d weight is (In_channels, Out_channels/groups, H, W)
         # In `_build`:
         # ConvTranspose2d(c4, c3, ...) -> Input c4 (256), Output c3 (128).
         # Weight shape: (256, 128, 4, 4).
-        # TF Weight 14: (4, 4, 128, 256). 
+        # TF Weight 14: (4, 4, 128, 256).
         # So transpose (3, 2, 0, 1) -> (256, 128, 4, 4). Correct.
         def convert_conv_t(w):
             return th.tensor(w.transpose(3, 2, 0, 1))
@@ -270,45 +256,45 @@ class Autoencoder(nn.Module):
         # Helper for Linear: TF (In, Out) -> PyTorch (Out, In)
         def convert_linear(w):
             return th.tensor(w.T)
-        
+
         new_state_dict = {}
-        
+
         # Encoder
         new_state_dict["encoder.0.weight"] = convert_conv(weights[0])
         new_state_dict["encoder.0.bias"] = th.tensor(weights[1])
-        
+
         new_state_dict["encoder.2.weight"] = convert_conv(weights[2])
         new_state_dict["encoder.2.bias"] = th.tensor(weights[3])
-        
+
         new_state_dict["encoder.4.weight"] = convert_conv(weights[4])
         new_state_dict["encoder.4.bias"] = th.tensor(weights[5])
-        
+
         new_state_dict["encoder.6.weight"] = convert_conv(weights[6])
         new_state_dict["encoder.6.bias"] = th.tensor(weights[7])
-        
+
         # Bottleneck (Mu) - Weight 8, 9
         # Ignore LogVar (Weight 10, 11) for deterministic encoding
         new_state_dict["encode_linear.weight"] = convert_linear(weights[8])
         new_state_dict["encode_linear.bias"] = th.tensor(weights[9])
-        
+
         # Decoder
         # Weight 12: Dense (32, 6144). Bias 13.
         new_state_dict["decode_linear.weight"] = convert_linear(weights[12])
         new_state_dict["decode_linear.bias"] = th.tensor(weights[13])
-        
+
         # ConvTranspose
         new_state_dict["decoder.0.weight"] = convert_conv_t(weights[14])
         new_state_dict["decoder.0.bias"] = th.tensor(weights[15])
-        
+
         new_state_dict["decoder.2.weight"] = convert_conv_t(weights[16])
         new_state_dict["decoder.2.bias"] = th.tensor(weights[17])
-        
+
         new_state_dict["decoder.4.weight"] = convert_conv_t(weights[18])
         new_state_dict["decoder.4.bias"] = th.tensor(weights[19])
-        
+
         new_state_dict["decoder.6.weight"] = convert_conv_t(weights[20])
         new_state_dict["decoder.6.bias"] = th.tensor(weights[21])
-        
+
         model.load_state_dict(new_state_dict)
         device = th.device("cuda") if th.cuda.is_available() else th.device("cpu")
         model.to(device)

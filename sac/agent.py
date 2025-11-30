@@ -17,49 +17,6 @@ import os
 from torch.utils.tensorboard import SummaryWriter
 from sac.utils.logger_utils import save_rewards, save_lengths
 
-# Initialize networks:
-#   Policy network πθ(a|s) with parameters θ
-#   Two Q-networks Qφ1(s,a) and Qφ2(s,a) with parameters φ1, φ2
-#   Two target Q-networks Qφ1_target(s,a) and Qφ2_target(s,a) with parameters φ1_target, φ2_target
-#   (Optional) Entropy temperature α (can be learned automatically)
-
-# Initialize replay buffer D
-# Warming up the replay buffer D with random actions for a certain number of steps
-
-# Loop for each training iteration:
-#   Sample a state s from the environment
-#   Sample an action a from the policy πθ(a|s)
-#   Execute action a in the environment, observe reward r, next state s', and done flag d
-#   Store transition (s, a, r, s', d) in replay buffer D
-
-#   If enough transitions in D:
-#     Sample a mini-batch of transitions (s, a, r, s', d) from D with size |B|
-
-#     Update Q-networks:
-#       Compute target Q-values:
-#         Sample a_next ~ πθ(a|s')
-#         log_pi_next = log(πθ(a_next|s'))
-#         q_target = r + γ * (1 - d) * (min(Qφ1_target(s', a_next), Qφ2_target(s', a_next)) - α * log_pi_next)
-
-#       Update Q-network parameters φ1, φ2 by minimizing:
-#         L_Q = 1/|B| * (MSE(Qφ1(s,a), q_target) + MSE(Qφ2(s,a), q_target))
-
-#     Update Policy network:
-#       Sample a_reparam ~ πθ(a|s) (using reparameterization trick)
-#       log_pi_reparam = log(πθ(a_reparam|s))
-
-#       Update policy parameters θ by minimizing:
-#         L_π = 1/|B| * (α * log_pi_reparam - min(Qφ1(s, a_reparam), Qφ2(s, a_reparam)))
-
-#     (Optional) Update Entropy Temperature α:
-#       If α is learned automatically:
-#         Update α by minimizing:
-#           L_α = -α * (log_pi_reparam + target_entropy)
-
-#     Update target Q-networks:
-#       φ1_target = ρ * φ1_target + (1 - ρ) * φ1
-#       φ2_target = ρ * φ2_target + (1 - ρ) * φ2
-
 
 class SAC:
     def __init__(self, env: gym.Env, config: dict):
@@ -85,8 +42,11 @@ class SAC:
         # Entropy
         self.target_entropy = -float(self.action_size)
         if self.config["sac"]["auto_entropy_tuning"]:
-            self.log_alpha = torch.tensor(np.log(self.config["sac"]["alpha"]),
-                                          requires_grad=True, device=self.device)
+            self.log_alpha = torch.tensor(
+                np.log(self.config["sac"]["alpha"]),
+                requires_grad=True,
+                device=self.device,
+            )
             self.alpha = torch.exp(self.log_alpha).detach()
             self.alpha_optimizer = optim.Adam(
                 [self.log_alpha], lr=self.config["sac"]["alpha_lr"]
@@ -122,7 +82,8 @@ class SAC:
             hidden_sizes=self.config["q_net"]["hidden_sizes"],
             hidden_activations=self.config["q_net"]["hidden_layers_act"],
             output_activation=self.config["q_net"]["output_activation"],
-            seed=self.config["train"]["seed"]+1, # different seed for different network
+            seed=self.config["train"]["seed"]
+            + 1,  # different seed for different network
         ).to(self.device)
         self.q_net1_target = deepcopy(self.q_net1).to(self.device)
         self.q_net2_target = deepcopy(self.q_net2).to(self.device)
@@ -573,7 +534,6 @@ class SAC:
             checkpoint["log_alpha"] = self.log_alpha
             checkpoint["alpha_optimizer_state_dict"] = self.alpha_optimizer.state_dict()
         torch.save(checkpoint, filepath)
-        # call self.logger.save to save any additional logger info (buffers, etc.)
 
     def load_agent(self, filepath: str) -> None:
         """Load the agent's networks and optimizers from a file."""
@@ -592,4 +552,3 @@ class SAC:
                 checkpoint["alpha_optimizer_state_dict"]
             )
             self.alpha = self.log_alpha.exp()
-        # call self.logger.load to load any additional logger info (buffers, etc.)
