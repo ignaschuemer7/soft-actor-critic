@@ -3,12 +3,12 @@
 # SAC Algorithm parameters
 sac:
   gamma: 0.99
-  tau: 0.01
+  tau: 0.02
   alpha: 0.1
-  auto_entropy_tuning: true
-  actor_lr: 0.00075
-  critic_lr: 0.00075
-  alpha_lr: 0.00075
+  auto_entropy_tuning: false
+  actor_lr: 0.0004
+  critic_lr: 0.0004
+  alpha_lr: 0.0004
 
 # Q-Network parameters
 q_net:
@@ -18,7 +18,7 @@ q_net:
 
 # Policy Network parameters
 policy_net:
-  hidden_sizes: [256, 256, 64]
+  hidden_sizes: [256, 256, 32]
   hidden_layers_act: 'elu'
   output_activation: 'identity'
   log_std_min: -20
@@ -31,11 +31,11 @@ buffer:
 
 # Training parameters
 train:
-  gradient_steps_per_update: 15
+  gradient_steps_per_update: 5
   update_frequency: 5
-  seed: 42
-  batch_size: 256
-  warming_steps: 1000
+  seed: 23
+  batch_size: 128
+  warming_steps: 3000
   device: 'cuda'
 
 # Logger parameters
