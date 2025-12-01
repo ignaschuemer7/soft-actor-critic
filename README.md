@@ -16,12 +16,6 @@ This project details a modular and extensible implementation of the Soft Actor-C
     </p>
   - [`InvertedPendulum-v5`](https://gymnasium.farama.org/environments/mujoco/inverted_pendulum/): Keep a hinged pole balanced upright by moving the cart beneath it.
 
-- **Custom Gymnasium Environments:**
-  - `OneDPointMassReachEnv`: A simple 1D point mass environment.
-  - `QuadraticActionRewardEnv`: An environment with a quadratic penalty on actions.
-  - `RandomObsBinaryRewardEnv`: An environment with random observations and binary rewards.
-  - `ConstantRewardEnv`: An environment that returns a constant reward, useful for debugging.
-
 - **[Donkey Gym](https://github.com/tawnkramer/gym-donkeycar) (OpenAI Gym wrapper for the [Self Driving Sandbox Donkey Simulator](https://docs.donkeycar.com/guide/deep_learning/simulator/)):**
     
   - `DonkeyVae-v0-level-0` (“generated roads”): Maintain the autonomous vehicle on procedurally generated tracks while completing laps quickly.
@@ -35,6 +29,13 @@ This project details a modular and extensible implementation of the Soft Actor-C
     This environment utilizes a Variational Auto-Encoder (VAE) as a feature extractor. The VAE compresses high-dimensional image observations into a lower-dimensional latent space that the SAC agent can effectively use for decision-making.
     
     The VAE implementation, simulator wrapper, and communication code are adapted from [Learning to Drive Smoothly in Minutes](https://github.com/araffin/learning-to-drive-in-5-minutes).
+    
+- **Custom Gymnasium Environments:**
+  - `OneDPointMassReachEnv`: A simple 1D point mass environment.
+  - `QuadraticActionRewardEnv`: An environment with a quadratic penalty on actions.
+  - `RandomObsBinaryRewardEnv`: An environment with random observations and binary rewards.
+  - `ConstantRewardEnv`: An environment that returns a constant reward, useful for debugging.
+
 
 ## Key Features
 
