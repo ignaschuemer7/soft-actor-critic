@@ -23,7 +23,7 @@ This project details a modular and extensible implementation of the Soft Actor-C
     <p align="center">
       <img src="assets/donkey_car.gif" alt="DonkeyCar Agent in action" width="400">
       <br/>
-      <em>Demo on DonkeyVae-v0-level-0 after 100 training episodes (max 1,000 steps each) using a 32-D VAE latent observation.</em>
+      <em>Our SAC agent on DonkeyVae-v0-level-0 after 100 training episodes (max 1,000 steps each) using a 32-D VAE latent observation.</em>
     </p>
 
     This environment utilizes a Variational Auto-Encoder (VAE) as a feature extractor. The VAE compresses high-dimensional image observations into a lower-dimensional latent space that the SAC agent can effectively use for decision-making.
