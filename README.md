@@ -1,7 +1,5 @@
 # Soft Actor-Critic (SAC) Implementation
 
-## Summary
-
 This repository contains an implementation of the Soft Actor-Critic (SAC) algorithm using PyTorch. It provides a flexible framework for continuous control tasks in reinforcement learning, featuring hyperparameter tuning, robust logging, and support for various environments.
 
 ## Overview
