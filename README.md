@@ -1,38 +1,40 @@
 # Soft Actor-Critic (SAC) Implementation
 
-This repository contains an implementation of the Soft Actor-Critic (SAC) algorithm using PyTorch. It provides a flexible framework for continuous control tasks in reinforcement learning, featuring hyperparameter tuning, robust logging, and support for various environments.
+This repository contains an implementation of the [Soft Actor-Critic](https://arxiv.org/abs/1801.01290) (SAC) algorithm using [PyTorch](https://pytorch.org/). It provides a flexible framework for continuous control tasks in reinforcement learning, featuring hyperparameter tuning, robust logging, and support for various environments.
 
 ## Overview
 
 This project details a modular and extensible implementation of the Soft Actor-Critic (SAC) algorithm in PyTorch, structured to facilitate research and experimentation in continuous control reinforcement learning. It emphasizes a clear separation of concerns, allowing for easy integration of diverse environments and flexible hyperparameter management, ensuring the agent's adaptability across various complex tasks.
 
 ### Tested Environments:
-- **Gymnasium:**
-  - `BipedalWalker-v3`: Teach a four-legged walker to traverse uneven terrain efficiently without falling.
+- **[Gymnasium](https://gymnasium.farama.org/index.html) Benchmarks:**
+  - [`BipedalWalker-v3`](https://gymnasium.farama.org/environments/box2d/bipedal_walker/): Teach a four-legged walker to traverse uneven terrain efficiently without falling.
     <p align="center">
       <img src="assets/bipedal_walker.gif" alt="BipedalWalker-v3 Agent in action" width="400">
       <br/>
       <em>Our SAC agent trained for 400 episodes (max 1,600 steps each) demonstrating stable locomotion on BipedalWalker-v3.</em>
     </p>
-    
-  - `InvertedPendulum-v5`: Keep a hinged pole balanced upright by moving the cart beneath it.
-- **DonkeyCar:**
-  - `DonkeyCar`: Maintain the autonomous vehicle on the racing line while completing laps as quickly as possible.
-  - Includes a wrapper for the [DonkeyCar simulator](https://docs.donkeycar.com/guide/deep_learning/simulator/) v18.9, allowing the agent to be trained in a simulated car racing environment.
-    <p align="center">
-      <img src="assets/donkey_car.gif" alt="DonkeyCar Agent in action" width="400">
-      <br/>
-      <em>Our SAC agent trained for 100 episodes (max 1,000 steps each) using a 32-dimensional observation vector derived from a VAE latent space.</em>
-    </p>
+  - [`InvertedPendulum-v5`](https://gymnasium.farama.org/environments/mujoco/inverted_pendulum/): Keep a hinged pole balanced upright by moving the cart beneath it.
 
-  - This environment utilizes a Variational Auto-Encoder (VAE) as a feature extractor. The VAE compresses high-dimensional image observations into a lower-dimensional latent space that the SAC agent can effectively use for decision-making.
-  - The VAE implementation, simulator wrapper, and communication code are adapted from [Learning to Drive Smoothly in Minutes](https://github.com/araffin/learning-to-drive-in-5-minutes).
-
-- **Custom Gym Environments:**
+- **Custom Gymnasium Environments:**
   - `OneDPointMassReachEnv`: A simple 1D point mass environment.
   - `QuadraticActionRewardEnv`: An environment with a quadratic penalty on actions.
   - `RandomObsBinaryRewardEnv`: An environment with random observations and binary rewards.
   - `ConstantRewardEnv`: An environment that returns a constant reward, useful for debugging.
+
+- **[Donkey Gym](https://github.com/tawnkramer/gym-donkeycar) (OpenAI Gym wrapper for the [Self Driving Sandbox Donkey Simulator](https://docs.donkeycar.com/guide/deep_learning/simulator/)):**
+    
+  - `DonkeyVae-v0-level-0` (“generated roads”): Maintain the autonomous vehicle on procedurally generated tracks while completing laps quickly.
+  - `DonkeyVae-v0-level-2` (“Sparkfun AVC”): Navigate the Sparkfun AVC circuit with minimal lateral error at racing speed.
+    <p align="center">
+      <img src="assets/donkey_car.gif" alt="DonkeyCar Agent in action" width="400">
+      <br/>
+      <em>Demo on DonkeyVae-v0-level-0 after 100 training episodes (max 1,000 steps each) using a 32-D VAE latent observation.</em>
+    </p>
+
+    This environment utilizes a Variational Auto-Encoder (VAE) as a feature extractor. The VAE compresses high-dimensional image observations into a lower-dimensional latent space that the SAC agent can effectively use for decision-making.
+    
+    The VAE implementation, simulator wrapper, and communication code are adapted from [Learning to Drive Smoothly in Minutes](https://github.com/araffin/learning-to-drive-in-5-minutes).
 
 ## Key Features
 
