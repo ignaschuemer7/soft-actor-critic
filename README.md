@@ -9,24 +9,22 @@ This project details a modular and extensible implementation of the Soft Actor-C
 ### Tested Environments:
 - **Gymnasium:**
   - `BipedalWalker-v3`: Teach a four-legged walker to traverse uneven terrain efficiently without falling.
-    <figure style="margin:1rem auto;max-width:420px;text-align:center;background:#1f2937;border-radius:1rem;padding:1rem;box-shadow:0 10px 25px rgba(0,0,0,0.35);">
-      <img src="assets/bipedal_walker.gif" alt="BipedalWalker-v3 Agent in action" width="400" style="border-radius:0.75rem;border:2px solid #e5e7eb;box-shadow:0 6px 18px rgba(0,0,0,0.3);"/>
-      <figcaption style="margin-top:0.75rem;font-size:0.95rem;font-weight:600;font-family:'Fira Sans',sans-serif;color:#111827;background:#e5e7eb;padding:0.6rem 0.85rem;border-radius:999px;display:inline-block;box-shadow:0 8px 18px rgba(0,0,0,0.2);">
-        Our SAC agent trained for 400 episodes (max 1,600 steps each) demonstrating stable locomotion on BipedalWalker-v3.
-      </figcaption>
-    </figure>
+    <p align="center">
+      <img src="assets/bipedal_walker.gif" alt="BipedalWalker-v3 Agent in action" width="400">
+      <br/>
+      <em>Our SAC agent trained for 400 episodes (max 1,600 steps each) demonstrating stable locomotion on BipedalWalker-v3.</em>
+    </p>
+    
   - `InvertedPendulum-v5`: Keep a hinged pole balanced upright by moving the cart beneath it.
 - **DonkeyCar:**
   - `DonkeyCar`: Maintain the autonomous vehicle on the racing line while completing laps as quickly as possible.
   - Includes a wrapper for the [DonkeyCar simulator](https://docs.donkeycar.com/guide/deep_learning/simulator/) v18.9, allowing the agent to be trained in a simulated car racing environment.
+    <p align="center">
+      <img src="assets/donkey_car.gif" alt="DonkeyCar Agent in action" width="400">
+      <br/>
+      <em>Our SAC agent trained for 100 episodes (max 1,000 steps each) using a 32-dimensional observation vector derived from a VAE latent space.</em>
+    </p>
 
-    <figure style="margin:1rem auto;max-width:420px;text-align:center;background:#111827;border-radius:1rem;padding:1rem;box-shadow:0 10px 25px rgba(0,0,0,0.4);">
-      <img src="assets/donkey_car.gif" alt="DonkeyCar Agent in action" width="400" style="border-radius:0.75rem;border:2px solid #94a3b8;box-shadow:0 6px 18px rgba(0,0,0,0.3);"/>
-      <figcaption style="margin-top:0.75rem;font-size:0.95rem;font-weight:600;font-family:'Fira Sans',sans-serif;color:#0f172a;background:#bfdbfe;padding:0.6rem 0.85rem;border-radius:999px;display:inline-block;box-shadow:0 8px 18px rgba(0,0,0,0.2);">
-        Our SAC agent trained for 100 episodes (max 1,000 steps each) using a 32-dimensional observation vector derived from a VAE latent space.
-      </figcaption>
-    </figure>
-    
   - This environment utilizes a Variational Auto-Encoder (VAE) as a feature extractor. The VAE compresses high-dimensional image observations into a lower-dimensional latent space that the SAC agent can effectively use for decision-making.
   - The VAE implementation, simulator wrapper, and communication code are adapted from [Learning to Drive Smoothly in Minutes](https://github.com/araffin/learning-to-drive-in-5-minutes).
 
