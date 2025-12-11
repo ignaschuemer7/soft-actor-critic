@@ -1,10 +1,25 @@
-# Soft Actor-Critic (SAC) Implementation
+# Soft Actor-Critic (SAC) in PyTorch
 
-This repository contains an implementation of the [Soft Actor-Critic](https://arxiv.org/abs/1801.01290) (SAC) algorithm using [PyTorch](https://pytorch.org/). It provides a flexible framework for continuous control tasks in reinforcement learning, featuring hyperparameter tuning, robust logging, and support for various environments.
+<p align="center">
+  <strong>A modular and extensible implementation of the Soft Actor-Critic (SAC) algorithm.</strong>
+  <br>
+  This repository provides a robust framework for continuous control tasks, featuring hyperparameter tuning, comprehensive logging, and support for a wide range of Gymnasium and custom environments.
+</p>
 
-## Overview
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.9+-blue?style=for-the-badge&logo=python" alt="Python Version">
+  <img src="https://img.shields.io/badge/PyTorch-2.0+-ee4c2c?style=for-the-badge&logo=pytorch" alt="PyTorch Version">
+  <img src="https://img.shields.io/badge/Gymnasium-0.29+-00ADD8?style=for-the-badge&logo=gymnasium" alt="Gymnasium Version">
+</p>
 
-This project details a modular and extensible implementation of the Soft Actor-Critic (SAC) algorithm in PyTorch, structured to facilitate research and experimentation in continuous control reinforcement learning. It emphasizes a clear separation of concerns, allowing for easy integration of diverse environments and flexible hyperparameter management, ensuring the agent's adaptability across various complex tasks.
+## Key Features
+
+- **Soft Actor-Critic (SAC) Algorithm:** A full implementation of the SAC algorithm, including the twin Q-network architecture and the automated entropy tuning.
+- **Hyperparameter Tuning with Optuna:** The repository includes a script for hyperparameter optimization using [Optuna](https://optuna.org/). The search space can be easily configured using YAML files.
+- **Logging System:** The logging system uses [TensorBoard](https://www.tensorflow.org/tensorboard) to log metrics, hyperparameters, and experiment results. It also saves Matplotlib graphs of the episode rewards, lengths, and Q-values.
+- **Configuration via YAML Files:** All the hyperparameters for the agent and the training process can be easily configured using YAML files.
+- **Jupyter Notebooks for Experimentation:** The repository includes several Jupyter notebooks that demonstrate how to use the SAC agent in different environments.
+- **Custom Environments:** The project includes several custom environments that can be used to test and debug the agent.
 
 ### Tested Environments:
 - **[Gymnasium](https://gymnasium.farama.org/index.html) Benchmarks:**
@@ -37,78 +52,53 @@ This project details a modular and extensible implementation of the Soft Actor-C
   - `ConstantRewardEnv`: An environment that returns a constant reward, useful for debugging.
 
 
-## Key Features
+## Getting Started
 
-- **Soft Actor-Critic (SAC) Algorithm:** A full implementation of the SAC algorithm, including the twin Q-network architecture and the automated entropy tuning.
-- **Hyperparameter Tuning with Optuna:** The repository includes a script for hyperparameter optimization using [Optuna](https://optuna.org/). The search space can be easily configured using YAML files.
-- **Logging System:** The logging system uses [TensorBoard](https://www.tensorflow.org/tensorboard) to log metrics, hyperparameters, and experiment results. It also saves Matplotlib graphs of the episode rewards, lengths, and Q-values.
-- **Configuration via YAML Files:** All the hyperparameters for the agent and the training process can be easily configured using YAML files.
-- **Jupyter Notebooks for Experimentation:** The repository includes several Jupyter notebooks that demonstrate how to use the SAC agent in different environments.
-- **Custom Environments:** The project includes several custom environments that can be used to test and debug the agent.
-
-## Installation
-
-### 1. Clone the repository
+### 1. Installation
+First, clone the repository and set up your virtual environment:
 ```bash
 git clone https://github.com/ignaschuemer7/RL-SAC.git
 cd RL-SAC
-```
-
-### 2. Create a virtual environment
-It is recommended to use a virtual environment to manage the dependencies.
-
-```bash
 python -m venv sac_env
 source sac_env/bin/activate
-```
-
-### 3. Install the dependencies
-```bash
 pip install -r requirements.txt
 ```
 
-## How to Run
-
-### Training the Agent
-You can train the SAC agent by running the `main.py` script with a configuration file. You can use the example configuration file `configs/example_config_env.yaml` as a starting point.
-
+### 2. Training the Agent
+Train the SAC agent using a configuration file. An example is provided in `configs/example_config_env.yaml`.
 ```bash
 python main.py --config configs/example_config_env.yaml
 ```
+You can create custom YAML files to train on different environments or with different hyperparameters.
 
-To train on a different environment, you can create a new YAML configuration file and specify the environment name and other hyperparameters.
-
-### Hyperparameter Search
-The repository includes a script for hyperparameter optimization using Optuna. You can run the hyperparameter search by running the `hparam_search/scripts/run_search.py` script.
-
+### 3. Hyperparameter Search
+Optimize hyperparameters with Optuna by running:
 ```bash
 python hparam_search/scripts/run_search.py --search-config hparam_search/configs/search_space.yaml --base-config hparam_search/configs/base_hparams.yaml --n-trials 10 --study-name my-study
 ```
+Customize the search space and base hyperparameters in the respective YAML configuration files.
 
-The search space and base hyperparameters can be configured in the `hparam_search/configs/search_space.yaml` and `hparam_search/configs/base_hparams.yaml` files, respectively.
+### 4. Experiment with Jupyter Notebooks
+The `notebooks` directory contains examples of how to use the SAC agent in various environments.
 
-### Jupyter Notebooks
-The repository includes several Jupyter notebooks that demonstrate how to use the SAC agent in different environments. You can run the notebooks to see how the agent performs in each environment.
+### 5. Viewing Logs
+Monitor training and hyperparameter search results with TensorBoard. Logs are organized as follows:
+- **`runs/`**: For training runs from `main.py`.
+- **`hparam_search/hparam_runs/`**: For Optuna hyperparameter searches.
+- **`notebooks/runs/`**: For trainings initiated from Jupyter notebooks.
 
-Navigate to the `notebooks` directory and open one of the notebooks.
-
-### Viewing Logs
-All experiment logs are saved in specific directories, organized by their purpose. You can view these logs using TensorBoard.
-
-*   **`runs/`**: Contains logs for training runs executed directly via `main.py`.
-*   **`hparam_search/hparam_runs/`**: Stores logs and results from hyperparameter optimization experiments conducted with Optuna.
-*   **`notebooks/runs/`**: Holds logs tracking the progress of agents trained within the provided Jupyter notebooks.
-
-To view the logs, navigate to the project root and run TensorBoard, specifying the relevant directory:
-
+Launch TensorBoard from the project root:
 ```bash
+# For standard training logs
 tensorboard --logdir runs/
-# Or for hyperparameter search logs:
+
+# For hyperparameter search logs
 tensorboard --logdir hparam_search/hparam_runs/
-# Or for notebook-specific logs:
+
+# For notebook-specific logs
 tensorboard --logdir notebooks/runs/
 ```
-This will start a TensorBoard server, and you can view the logs in your browser at `http://localhost:6006/`.
+Access the dashboard at `http://localhost:6006/`.
 
 
 ## Authors
