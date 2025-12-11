@@ -1,16 +1,14 @@
-# Soft Actor-Critic (SAC) in PyTorch
+# Soft Actor-Critic (SAC)
 
 <p align="center">
-  <strong>A modular and extensible implementation of the Soft Actor-Critic (SAC) algorithm.</strong>
+  <strong>A modular and extensible implementation of the <a href="https://arxiv.org/abs/1801.01290">Soft Actor-Critic (SAC)</a> algorithm in <a href="https://pytorch.org/">PyTorch</a>.
   <br>
-  This repository provides a robust framework for continuous control tasks, featuring hyperparameter tuning, comprehensive logging, and support for a wide range of Gymnasium and custom environments.
+  This repository provides a robust framework for continuous control tasks, featuring hyperparameter tuning, comprehensive logging, and support for a wide range of Gymnasium and custom environments.</strong>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.9+-blue?style=for-the-badge&logo=python" alt="Python Version">
-  <img src="https://img.shields.io/badge/PyTorch-2.0+-ee4c2c?style=for-the-badge&logo=pytorch" alt="PyTorch Version">
-  <img src="https://img.shields.io/badge/Gymnasium-0.29+-00ADD8?style=for-the-badge&logo=gymnasium" alt="Gymnasium Version">
-</p>
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
+[![PyTorch 2.0+](https://img.shields.io/badge/pytorch-2.0%2B-ee4c2c.svg)](https://pytorch.org/)
+[![Gymnasium 0.29+](https://img.shields.io/badge/gymnasium-0.29%2B-00ADD8.svg)](https://gymnasium.farama.org/)
 
 ## Key Features
 
