@@ -19,7 +19,7 @@ from DonkeyCarEnv.ae.autoencoder import load_ae
 import pathlib
 
 MAX_EPISODE_STEPS = (
-    1000  # fallback horizon for wrappers expecting a finite episode length
+    6000  # fallback horizon for wrappers expecting a finite episode length
 )
 VAE_ARCHIVE_DIR = os.environ.get(
     "VAE_ARCHIVE_DIR",
@@ -67,7 +67,8 @@ class GymnasiumDonkeyWrapper(gym.Env):
         obs, reward, done, info = self.donkey_env.step(action)
         self._step_count += 1
         terminated = bool(done)
-        truncated = self._step_count >= self.max_episode_steps
+        # truncated = self._step_count >= self.max_episode_steps
+        truncated = False  # DonkeyVAEEnv does not have a built-in time limit
         obs = self._flatten_obs(obs)
         info = info or {}
         if truncated:

@@ -15,7 +15,7 @@ INPUT_DIM = (IMAGE_HEIGHT, IMAGE_WIDTH, N_CHANNELS)
 
 # Reward parameters
 THROTTLE_REWARD_WEIGHT = 0.1
-JERK_REWARD_WEIGHT = 0.0
+JERK_REWARD_WEIGHT = 0.3
 
 # very smooth control: 10% -> 0.2 diff in steering allowed (requires more training)
 # smooth control: 15% -> 0.3 diff in steering allowed
